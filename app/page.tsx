@@ -1,103 +1,202 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { motion } from "framer-motion"
+import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar } from "lucide-react"
+import Link from "next/link"
+import { Card, CardContent } from "@/components/ui/card"
+import { BottomNav } from "@/components/bottom-nav"
+import { useEffect, useState } from "react"
+import { currentUser } from "@/lib/helpers/session"
+
+
+const quickActions = [
+  {
+    title: "Search Drugs",
+    description: "Find drug information",
+    icon: Pill,
+    href: "/drugs",
+    gradient: "from-blue-500 to-cyan-500",
+  },
+  {
+    title: "AI Assistant",
+    description: "Ask medical questions",
+    icon: MessageSquare,
+    href: "/chat",
+    gradient: "from-purple-500 to-pink-500",
+  },
+  {
+    title: "Prescriptions",
+    description: "Manage prescriptions",
+    icon: FileText,
+    href: "/prescription",
+    gradient: "from-green-500 to-emerald-500",
+  },
+  {
+    title: "Diagnosis",
+    description: "AI diagnosis support",
+    icon: Stethoscope,
+    href: "/diagnosis",
+    gradient: "from-red-500 to-orange-500",
+  },
+  // {
+  //   title: "Scheduler",
+  //   description: "Task management",
+  //   icon: Calendar,
+  //   href: "/scheduler",
+  //   gradient: "from-indigo-500 to-purple-500",
+  // },
+]
+
+const allHealthTips = [
+  { icon: Activity, tip: "Stay hydrated - drink at least 8 glasses of water daily" },
+  { icon: Heart, tip: "Regular exercise improves cardiovascular health" },
+  { icon: Sparkles, tip: "Get 7-9 hours of quality sleep each night" },
+  { icon: Activity, tip: "Take the stairs instead of elevators when possible" },
+  { icon: Heart, tip: "Eat a balanced diet rich in fruits and vegetables" },
+  { icon: Sparkles, tip: "Practice deep breathing exercises to reduce stress" },
+  { icon: Activity, tip: "Wash your hands frequently to prevent infections" },
+  { icon: Heart, tip: "Limit processed foods and added sugars" },
+  { icon: Sparkles, tip: "Take regular breaks from screen time" },
+  { icon: Activity, tip: "Maintain good posture while sitting and standing" },
+  { icon: Heart, tip: "Schedule regular health check-ups" },
+  { icon: Sparkles, tip: "Practice mindfulness and meditation" },
+  { icon: Activity, tip: "Get some sunlight exposure for vitamin D" },
+  { icon: Heart, tip: "Avoid smoking and limit alcohol consumption" },
+  { icon: Sparkles, tip: "Keep a consistent sleep schedule" }
+]
+
+export default function HomePage() {
+  const [user, setUser] = useState<{
+    _id: string;
+    role: string;
+    fullName?: string;
+    email?: string;
+    profileImage?: string;
+    status?: string;
+    permissions?: string[];
+    [key: string]: string | number | boolean | string[] | undefined;
+  } | null>(null)
+  const [dailyTips, setDailyTips] = useState<typeof allHealthTips>([])
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkUser = async () => {
+      try {
+        const userData = await currentUser()
+        setUser(userData)
+      } catch (error) {
+        setUser(null)
+      }
+    }
+    checkUser()
+
+    // Get daily tips based on current date
+    const today = new Date()
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+    const startIndex = dayOfYear % allHealthTips.length
+    const selectedTips = [
+      allHealthTips[startIndex],
+      allHealthTips[(startIndex + 1) % allHealthTips.length],
+      allHealthTips[(startIndex + 2) % allHealthTips.length]
+    ]
+    setDailyTips(selectedTips)
+  }, [])
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20 p-6 bottom-nav-spacing">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 pt-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-3 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-lg">
+            <Heart className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-balance">Doctor Assistance</h1>
+            <p className="text-muted-foreground">Your health companion</p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-8"
+      >
+        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <div className="grid gap-4">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <motion.div
+                key={action.title}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
+              >
+                <Link href={action.href}>
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 bg-gradient-to-br ${action.gradient} rounded-xl shadow-md`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{action.title}</h3>
+                          <p className="text-sm text-muted-foreground">{action.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
+      </motion.div>
+
+      {/* Health Tips */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mb-8"
+      >
+        <h2 className="text-xl font-semibold mb-4">Daily Health Tips</h2>
+        <div className="space-y-3">
+          {dailyTips.map((item, index) => {
+            const Icon = item.icon
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+              >
+                <Card className="bg-gradient-to-r from-card to-muted/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <p className="text-sm leading-relaxed flex-1">{item.tip}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </div>
+      </motion.div>
+
+      {!user && (
+        <div className="text-center mt-8">
+          <Link href="/login" className="text-primary hover:underline">
+            Sign in to access all features
+          </Link>
+        </div>
+      )}
+       <BottomNav />
     </div>
-  );
+  )
 }
