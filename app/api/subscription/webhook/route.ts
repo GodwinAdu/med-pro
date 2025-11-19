@@ -23,27 +23,32 @@ export async function POST(request: NextRequest) {
     }
 
     const event = JSON.parse(body)
+    console.log('Webhook event received:', event.event, event.data)
     
-    if (event.event === 'subscription.create' || event.event === 'charge.success') {
+    // Handle successful payment events
+    if (event.event === 'charge.success' && event.data.status === 'success') {
       await connectToDB()
       
       const { metadata } = event.data
       const userId = metadata?.userId
       const plan = metadata?.plan
+      const duration = metadata?.duration || 1
       
       if (userId && plan) {
         const user = await User.findById(userId)
         if (user) {
           const now = new Date()
-          const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
+          // Calculate end date based on duration in months
+          const endDate = new Date(now)
+          endDate.setMonth(endDate.getMonth() + duration)
           
           user.subscriptionPlan = plan
           user.subscriptionStartDate = now
           user.subscriptionEndDate = endDate
-          user.paystackCustomerId = event.data.customer?.id
-          user.paystackSubscriptionCode = event.data.subscription_code
+          user.paystackCustomerId = event.data.customer?.id || event.data.customer?.customer_code
           
           await user.save()
+          console.log(`Updated user ${userId} to ${plan} plan for ${duration} months`)
         }
       }
     }

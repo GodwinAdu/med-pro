@@ -129,20 +129,20 @@ export default function PricingPage() {
 
     return (
         <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-4">
+            <div className="min-h-screen bottom-nav-spacing p-3">
                 <PageHeader
                     title="Pricing"
                     subtitle="Choose your plan"
                     icon={<Crown className="w-6 h-6" />}
                 />
 
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                     <p className="text-sm text-muted-foreground mb-4">
                         Start with 14-day free trial. Upgrade anytime.
                     </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {plans.map((plan) => {
                         const isCurrentPlan = plan.planCode === currentPlan
                         const isDowngrade = plan.planCode === "free" && currentPlan !== "free"
@@ -150,7 +150,7 @@ export default function PricingPage() {
                         return (
                             <Card
                                 key={plan.name}
-                                className={`p-4 border-2 ${
+                                className={`p-3 border-2 ${
                                     plan.popular 
                                         ? "border-blue-600 bg-blue-50 dark:bg-blue-950" 
                                         : "border-border"
@@ -168,13 +168,13 @@ export default function PricingPage() {
                                     </div>
                                 )}
 
-                                <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center justify-between mb-2">
                                     <div>
-                                        <h3 className="text-lg font-bold">{plan.name}</h3>
+                                        <h3 className="text-base font-bold">{plan.name}</h3>
                                         <p className="text-sm text-muted-foreground">{plan.description}</p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold">
+                                        <div className="text-xl font-bold">
                                             {plan.price === 0 ? "Free" : `₦${plan.price}`}
                                         </div>
                                         {plan.price > 0 && (
@@ -186,7 +186,7 @@ export default function PricingPage() {
                                 <Button
                                     onClick={() => handleSelectPlan(plan.planCode)}
                                     disabled={loading === plan.planCode || isCurrentPlan || isDowngrade}
-                                    className={`w-full mb-4 h-10 ${
+                                    className={`w-full mb-3 h-9 text-sm ${
                                         plan.popular 
                                             ? "bg-blue-600 hover:bg-blue-700" 
                                             : "bg-slate-900 hover:bg-slate-800"
@@ -203,7 +203,7 @@ export default function PricingPage() {
                                     )}
                                 </Button>
 
-                                <ul className="space-y-2">
+                                <ul className="space-y-1">
                                     {plan.features.map((feature) => (
                                         <li key={feature} className="flex items-start gap-2">
                                             <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
@@ -216,7 +216,7 @@ export default function PricingPage() {
                     })}
                 </div>
 
-                <div className="mt-6 text-center text-xs text-muted-foreground">
+                <div className="mt-4 text-center text-xs text-muted-foreground">
                     <p>All paid plans are billed monthly. Cancel anytime.</p>
                     <p className="mt-1">Payments processed securely via Paystack.</p>
                 </div>

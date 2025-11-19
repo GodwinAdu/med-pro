@@ -126,15 +126,15 @@ export default function PrescriptionsPage() {
 
     return (
         <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-4">
+            <div className="min-h-screen bottom-nav-spacing p-3">
                 <PageHeader
                     title="Prescription Validator"
                     subtitle="AI-powered prescription safety analysis"
                     icon={<Shield className="w-6 h-6" />}
                 />
 
-                <div className="space-y-6">
-                    <Card className="p-4">
+                <div className="space-y-4">
+                    <Card className="p-3">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <Pill className="w-5 h-5" />
                             Prescription Details

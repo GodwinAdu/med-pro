@@ -102,16 +102,16 @@ export default function DiagnosisPage() {
 
     return (
         <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-4">
+            <div className="min-h-screen bottom-nav-spacing p-3">
                 <PageHeader
                     title="Clinical Diagnosis"
                     subtitle="AI-powered differential diagnosis with references"
                     icon={<Brain className="w-6 h-6" />}
                 />
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <Card className="p-4">
-                        <h2 className="text-lg font-bold mb-4">Patient Information</h2>
+                        <h2 className="text-base font-bold mb-3">Patient Information</h2>
 
                         <div className="space-y-4">
                             <div className="space-y-2">

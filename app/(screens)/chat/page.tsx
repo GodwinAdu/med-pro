@@ -178,7 +178,7 @@ export default function ChatPage() {
 
     return (
         <div className="h-screen flex flex-col bg-background">
-            <div className="border-b border-border p-4">
+            <div className="border-b border-border p-3">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
                         <Stethoscope className="w-5 h-5 text-white" />
@@ -190,7 +190,7 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
                 {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                         <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl flex items-center justify-center mb-4">
@@ -300,7 +300,7 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-border p-4 bg-background">
+            <div className="border-t border-border p-3 bg-background">
                 <form onSubmit={handleSubmit} className="flex gap-3">
                     <Textarea
                         value={input}

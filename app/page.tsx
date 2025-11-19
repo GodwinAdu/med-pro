@@ -103,14 +103,14 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20 p-6 bottom-nav-spacing">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 pt-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-3 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-lg">
-            <Heart className="w-8 h-8 text-primary-foreground" />
+    <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20 p-3 bottom-nav-spacing">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 pt-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg">
+            <Heart className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-balance">Doctor Assistance</h1>
+            <h1 className="text-2xl font-bold text-balance">Doctor Assistance</h1>
             <p className="text-muted-foreground">Your health companion</p>
           </div>
         </div>
@@ -121,10 +121,10 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="mb-8"
+        className="mb-6"
       >
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid gap-4">
+        <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
+        <div className="grid gap-3">
           {quickActions.map((action, index) => {
             const Icon = action.icon
             return (
@@ -136,13 +136,13 @@ export default function HomePage() {
               >
                 <Link href={action.href}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-3 bg-gradient-to-br ${action.gradient} rounded-xl shadow-md`}>
-                          <Icon className="w-6 h-6 text-white" />
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 bg-gradient-to-br ${action.gradient} rounded-lg shadow-md`}>
+                          <Icon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{action.title}</h3>
+                          <h3 className="font-semibold text-base">{action.title}</h3>
                           <p className="text-sm text-muted-foreground">{action.description}</p>
                         </div>
                       </div>
@@ -160,10 +160,10 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="mb-8"
+        className="mb-6"
       >
-        <h2 className="text-xl font-semibold mb-4">Daily Health Tips</h2>
-        <div className="space-y-3">
+        <h2 className="text-lg font-semibold mb-3">Daily Health Tips</h2>
+        <div className="space-y-2">
           {dailyTips.map((item, index) => {
             const Icon = item.icon
             return (
@@ -174,10 +174,10 @@ export default function HomePage() {
                 transition={{ delay: 0.5 + index * 0.1 }}
               >
                 <Card className="bg-gradient-to-r from-card to-muted/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Icon className="w-5 h-5 text-primary" />
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-2">
+                      <div className="p-1.5 bg-primary/10 rounded-md">
+                        <Icon className="w-4 h-4 text-primary" />
                       </div>
                       <p className="text-sm leading-relaxed flex-1">{item.tip}</p>
                     </div>
@@ -190,7 +190,7 @@ export default function HomePage() {
       </motion.div>
 
       {!user && (
-        <div className="text-center mt-8">
+        <div className="text-center mt-6">
           <Link href="/login" className="text-primary hover:underline">
             Sign in to access all features
           </Link>
