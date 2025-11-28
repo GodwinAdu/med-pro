@@ -18,7 +18,7 @@ export default function SubscriptionCallback() {
     const verifyPayment = async () => {
       if (status === 'success' && reference) {
         try {
-          const response = await fetch('/api/subscription/verify', {
+          const response = await fetch('/api/payment/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -31,9 +31,9 @@ export default function SubscriptionCallback() {
           if (response.ok && data.success) {
             setSuccess(true)
             toast.success('Payment Successful!', {
-              description: `Your ${data.plan} subscription has been activated.`
+              description: `Your ${data.subscription.plan} subscription has been activated.`
             })
-            setTimeout(() => router.push('/profile'), 2000)
+            setTimeout(() => router.push('/'), 2000)
           } else {
             throw new Error(data.error || 'Verification failed')
           }

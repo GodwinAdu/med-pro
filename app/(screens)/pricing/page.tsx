@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Card } from "@/components/ui/card"
 import { toast } from "sonner"
+import { currentUser } from "@/lib/helpers/session"
 
 const plans = [
     {
@@ -57,23 +58,29 @@ const plans = [
 export default function PricingPage() {
     const [loading, setLoading] = useState<string | null>(null)
     const [currentPlan, setCurrentPlan] = useState<string>("free")
+    const [currentDuration, setCurrentDuration] = useState<1 | 3 | 6 | 12 | null>(null)
     const [showPaymentModal, setShowPaymentModal] = useState(false)
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
     const [selectedDuration, setSelectedDuration] = useState<1 | 3 | 6 | 12>(12)
 
     useEffect(() => {
-        // Fetch user's current plan from your auth/user system
-        // setCurrentPlan(user.subscriptionPlan)
+        const fetchUserPlan = async () => {
+            try {
+                const user = await currentUser()
+                if (user && user.subscriptionPlan) {
+                    setCurrentPlan(user.subscriptionPlan)
+                    setCurrentDuration(user.subscriptionDuration || null)
+                }
+            } catch (error) {
+                console.error('Failed to fetch user plan:', error)
+                // Keep default 'free' plan if fetch fails
+            }
+        }
+        
+        fetchUserPlan()
     }, [])
 
     const handleSelectPlan = (planCode: string) => {
-        if (planCode === currentPlan) {
-            toast.info("Current Plan", {
-                description: `You're already on the ${planCode} plan`
-            })
-            return
-        }
-
         if (planCode === "free") {
             toast.info("Free Plan", {
                 description: "Cannot downgrade to free plan"
@@ -128,8 +135,8 @@ export default function PricingPage() {
     }
 
     return (
-        <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-3">
+        <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <div className="min-h-screen bottom-nav-spacing p-3 sm:p-6 lg:p-8">
                 <PageHeader
                     title="Pricing"
                     subtitle="Choose your plan"
@@ -143,6 +150,7 @@ export default function PricingPage() {
                 </div>
 
                 <div className="space-y-3">
+                    <div className="space-y-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:space-y-0">
                     {plans.map((plan) => {
                         const isCurrentPlan = plan.planCode === currentPlan
                         const isDowngrade = plan.planCode === "free" && currentPlan !== "free"
@@ -175,7 +183,7 @@ export default function PricingPage() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xl font-bold">
-                                            {plan.price === 0 ? "Free" : `₦${plan.price}`}
+                                            {plan.price === 0 ? "Free" : `₵${plan.price}`}
                                         </div>
                                         {plan.price > 0 && (
                                             <div className="text-xs text-muted-foreground">/month</div>
@@ -185,17 +193,17 @@ export default function PricingPage() {
 
                                 <Button
                                     onClick={() => handleSelectPlan(plan.planCode)}
-                                    disabled={loading === plan.planCode || isCurrentPlan || isDowngrade}
+                                    disabled={loading === plan.planCode || isDowngrade}
                                     className={`w-full mb-3 h-9 text-sm ${
                                         plan.popular 
                                             ? "bg-blue-600 hover:bg-blue-700" 
                                             : "bg-slate-900 hover:bg-slate-800"
-                                    } ${isCurrentPlan || isDowngrade ? "opacity-50 cursor-not-allowed" : ""}`}
+                                    } ${isDowngrade ? "opacity-50 cursor-not-allowed" : ""}`}
                                 >
                                     {loading === plan.planCode ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : isCurrentPlan ? (
-                                        "Current Plan"
+                                        "Extend Plan"
                                     ) : isDowngrade ? (
                                         "Cannot Downgrade"
                                     ) : (
@@ -214,6 +222,7 @@ export default function PricingPage() {
                             </Card>
                         )
                     })}
+                </div>
                 </div>
 
                 <div className="mt-4 text-center text-xs text-muted-foreground">
@@ -254,13 +263,16 @@ export default function PricingPage() {
                                     { value: 12, label: '1 Year', originalPrice: selectedPlan === 'basic' ? 840 : 1800, discount: 0.15 }
                                 ].map((option) => {
                                     const finalPrice = Math.round(option.originalPrice * (1 - option.discount))
+                                    const isCurrentDurationOrLower = selectedPlan === currentPlan && currentDuration !== null && option.value <= currentDuration
+                                    
                                     return (
                                         <Button
                                             key={option.value}
                                             variant={selectedDuration === option.value ? "default" : "outline"}
                                             size="sm"
                                             onClick={() => setSelectedDuration(option.value as 1 | 3 | 6 | 12)}
-                                            className="h-12 flex flex-col"
+                                            disabled={isCurrentDurationOrLower}
+                                            className={`h-12 flex flex-col ${isCurrentDurationOrLower ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <div className="font-medium">{option.label}</div>
                                             <div className="text-xs">

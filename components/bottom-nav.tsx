@@ -25,10 +25,10 @@ export function BottomNav() {
         <motion.nav
             initial={{ y: 100 }}
             animate={{ y: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md"
+            className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl"
         >
             <div className="bg-card/98 backdrop-blur-xl border-t border-border shadow-2xl safe-area-inset-bottom">
-                <div className="flex items-center justify-around px-1 py-2">
+                <div className="flex items-center justify-around px-1 py-2 sm:px-4 sm:py-3">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href
                         const Icon = item.icon

@@ -9,6 +9,7 @@ export interface IUser extends Document {
     isActive: boolean;
     isDeleted: boolean;
     subscriptionPlan: "free" | "basic" | "pro";
+    subscriptionDuration?: 1 | 3 | 6 | 12;
     subscriptionStartDate?: Date;
     subscriptionEndDate?: Date;
     trialStartDate?: Date;
@@ -74,6 +75,11 @@ const UserSchema = new Schema(
             type: String,
             enum: ["free", "basic", "pro"],
             default: "free",
+        },
+
+        subscriptionDuration: {
+            type: Number,
+            enum: [1, 3, 6, 12],
         },
 
         subscriptionStartDate: { type: Date },

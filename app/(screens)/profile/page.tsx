@@ -54,8 +54,11 @@ export default function ProfilePage() {
 
     const getSubscriptionStatus = () => {
         if (user?.subscriptionPlan === 'pro' || user?.subscriptionPlan === 'basic') {
-            if (user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()) {
-                return 'Active'
+            if (user.subscriptionEndDate) {
+                const endDate = new Date(user.subscriptionEndDate)
+                const now = new Date()
+                console.log('Subscription check:', { endDate, now, isActive: endDate > now })
+                return endDate > now ? 'Active' : 'Expired'
             }
             return 'Expired'
         }
@@ -126,8 +129,8 @@ export default function ProfilePage() {
     ]
 
     return (
-        <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-4">
+        <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <div className="min-h-screen bottom-nav-spacing p-4 sm:p-6 lg:p-8">
                 <PageHeader
                     title="Profile"
                     subtitle="Manage your settings and preferences"

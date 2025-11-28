@@ -16,7 +16,9 @@ const authConfig = {
         "/",
         "/login",   
         "/signup",
-        "/api/*"
+        "/api/*",
+        "/payment/mobile-money/callback",
+        "/subscription/callback"
     ],
     protectedRoutes: [] as string[],
     loginUrl: "/login",

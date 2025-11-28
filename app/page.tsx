@@ -103,14 +103,14 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20 p-3 bottom-nav-spacing">
+    <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20 p-3 sm:p-6 lg:p-8 bottom-nav-spacing">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 pt-2">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg">
             <Heart className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-balance">Doctor Assistance</h1>
+            <h1 className="text-2xl font-bold text-balance">MedPro</h1>
             <p className="text-muted-foreground">Your health companion</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function HomePage() {
         className="mb-6"
       >
         <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
-        <div className="grid gap-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action, index) => {
             const Icon = action.icon
             return (

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { Suspense } from "react"
 import { Toaster } from "@/components/ui/sonner";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 
 
 
@@ -62,7 +63,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingSkeleton />}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
 
             {children}

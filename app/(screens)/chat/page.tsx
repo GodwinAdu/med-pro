@@ -178,17 +178,7 @@ export default function ChatPage() {
 
     return (
         <div className="h-screen flex flex-col bg-background">
-            <div className="border-b border-border p-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
-                        <Stethoscope className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-base font-semibold">MedAssist AI</h1>
-                        <p className="text-xs text-muted-foreground">Professional Medical Assistant</p>
-                    </div>
-                </div>
-            </div>
+           
 
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
                 {messages.length === 0 && (
@@ -196,7 +186,7 @@ export default function ChatPage() {
                         <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl flex items-center justify-center mb-4">
                             <Stethoscope className="w-8 h-8 text-white" />
                         </div>
-                        <h2 className="text-lg font-semibold mb-2">MedAssist AI</h2>
+                        <h2 className="text-lg font-semibold mb-2">MedPro AI</h2>
                         <p className="text-sm text-muted-foreground mb-6 max-w-sm">
                             Professional medical AI assistant ready to help with clinical questions, diagnosis support, and medical guidance.
                         </p>

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         amount: totalAmount,
         currency: 'GHS',
-        callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/subscription/callback`,
+        callback_url: `${process.env.APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/subscription/callback`,
         channels: ['card'],
         metadata: {
           userId: user._id,

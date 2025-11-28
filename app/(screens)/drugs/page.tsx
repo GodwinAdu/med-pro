@@ -213,8 +213,8 @@ export default function DrugsPage() {
     }
 
     return (
-        <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="min-h-screen bottom-nav-spacing p-3">
+        <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <div className="min-h-screen bottom-nav-spacing p-3 sm:p-6 lg:p-8">
                 <PageHeader
                     title="Drug Search"
                     subtitle="AI-powered drug information from FDA database"

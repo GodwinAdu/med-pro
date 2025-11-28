@@ -18,9 +18,9 @@ export function PageHeader({ title, subtitle, icon }: PageHeaderProps) {
             {icon}
           </div>
         )}
-        <h1 className="text-3xl font-bold text-balance">{title}</h1>
+        <h1 className="text-xl sm:text-3xl font-bold text-balance">{title}</h1>
       </div>
-      {subtitle && <p className="text-muted-foreground text-pretty leading-relaxed">{subtitle}</p>}
+      {subtitle && <p className="text-sm sm:text-base text-muted-foreground text-pretty leading-relaxed">{subtitle}</p>}
     </motion.div>
   )
 }

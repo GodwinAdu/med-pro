@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const discountRates = { 1: 0, 3: 0.05, 6: 0.10, 12: 0.15 }
     const baseAmount = monthlyPrice * duration
     const discount = baseAmount * discountRates[duration]
-    const totalAmount = baseAmount - discount
+    const totalAmount = Math.round(baseAmount - discount)
 
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         amount: totalAmount,
         currency: 'GHS',
-        callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/payment/mobile-money/callback`,
+        callback_url: `${process.env.APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/payment/mobile-money/callback`,
         channels: ['mobile_money'],
         metadata: {
           userId: user._id,
