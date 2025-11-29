@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectToDatabase } from '@/lib/database'
-import { User } from '@/lib/models/user.models'
+import { connectToDB } from '@/lib/mongoose'
+import User from '@/lib/models/user.models'
 import { currentUser } from '@/lib/helpers/session'
 
 export async function PUT(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await connectToDB()
     
     const user = await currentUser()
     if (!user) {
