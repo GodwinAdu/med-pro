@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { Search, Pill, AlertCircle, Loader2, Brain, Sparkles, Plus, X, Shield, Calculator } from "lucide-react"
+import { Search, Pill, AlertCircle, Loader2, Brain, Sparkles, Plus, X, Shield, Calculator, Volume2 } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AudioPlayer } from "@/components/audio-player"
 
 interface DrugSearchResult {
     rawData: any
@@ -278,10 +279,12 @@ export default function DrugsPage() {
                                     {/* AI Summary */}
                                     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
                                         <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-primary text-base">
-                                                <Brain className="w-5 h-5" />
-                                                AI Summary
-                                                <Sparkles className="w-4 h-4 text-primary/60" />
+                                            <CardTitle className="flex items-center justify-between text-primary text-base">
+                                                <div className="flex items-center gap-2">
+                                                    <Brain className="w-5 h-5" />
+                                                    AI Summary
+                                                    <Sparkles className="w-4 h-4 text-primary/60" />
+                                                </div>
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent>
@@ -298,6 +301,7 @@ export default function DrugsPage() {
                                                 </div>
                                             ) : drugInfo ? (
                                                 <div className="space-y-3">
+                                                    <AudioPlayer text={drugInfo.summary} />
                                                     {drugInfo.summary.split('\n\n').map((section, index) => {
                                                         const lines = section.split('\n')
                                                         const title = lines[0]
@@ -330,9 +334,14 @@ export default function DrugsPage() {
                                     {drugInfo && (
                                         <Card>
                                             <CardHeader>
-                                                <CardTitle className="text-base">Basic Information</CardTitle>
+                                                <CardTitle className="flex items-center justify-between text-base">
+                                                    Basic Information
+                                                </CardTitle>
                                             </CardHeader>
                                             <CardContent className="space-y-3">
+                                                <AudioPlayer 
+                                                    text={`Drug Information: Brand name ${drugInfo.basicInfo.brand_name}, Generic name ${drugInfo.basicInfo.generic_name}, Manufacturer ${drugInfo.basicInfo.manufacturer}, Dosage form ${drugInfo.basicInfo.dosage_form}, Route ${drugInfo.basicInfo.route}, Purpose ${drugInfo.basicInfo.purpose}`} 
+                                                />
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
                                                         <h3 className="font-semibold text-xs text-muted-foreground mb-1">Brand Name</h3>
@@ -448,7 +457,8 @@ export default function DrugsPage() {
                                 {interactionResult && !interactionLoading && (
                                     <Card className="border-orange-200 bg-orange-50/50">
                                         <CardContent className="p-4">
-                                            <div className="space-y-3">
+                                            <AudioPlayer text={interactionResult} />
+                                            <div className="space-y-3 mt-3">
                                                 {interactionResult.split('\n\n').map((section, index) => {
                                                     const lines = section.split('\n')
                                                     const title = lines[0]
@@ -541,7 +551,8 @@ export default function DrugsPage() {
                                 {dosageResult && !dosageLoading && (
                                     <Card className="mt-4 border-blue-200 bg-blue-50/50">
                                         <CardContent className="p-4">
-                                            <div className="space-y-3">
+                                            <AudioPlayer text={dosageResult} />
+                                            <div className="space-y-3 mt-3">
                                                 {dosageResult.split('\n\n').map((section, index) => {
                                                     const lines = section.split('\n')
                                                     const title = lines[0]

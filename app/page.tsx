@@ -1,10 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar } from "lucide-react"
+import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar, ClipboardList } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { BottomNav } from "@/components/bottom-nav"
+import { EmergencyMode } from "@/components/emergency-mode"
 import { useEffect, useState } from "react"
 import { currentUser } from "@/lib/helpers/session"
 
@@ -38,13 +39,13 @@ const quickActions = [
     href: "/diagnosis",
     gradient: "from-red-500 to-orange-500",
   },
-  // {
-  //   title: "Scheduler",
-  //   description: "Task management",
-  //   icon: Calendar,
-  //   href: "/scheduler",
-  //   gradient: "from-indigo-500 to-purple-500",
-  // },
+  {
+    title: "Care Plan",
+    description: "Create treatment plans",
+    icon: ClipboardList,
+    href: "/care-plan",
+    gradient: "from-teal-500 to-blue-500",
+  },
 ]
 
 const allHealthTips = [
@@ -197,6 +198,7 @@ export default function HomePage() {
         </div>
       )}
        <BottomNav />
+      <EmergencyMode />
     </div>
   )
 }

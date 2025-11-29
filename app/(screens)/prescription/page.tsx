@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Pill, Loader2, CheckCircle, AlertTriangle, Plus, Trash2, Brain, Shield } from "lucide-react"
+import { Pill, Loader2, CheckCircle, AlertTriangle, Plus, Trash2, Brain, Shield, Download, Mail, Volume2 } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { toast } from "sonner"
+import { downloadPrescriptionPDF } from "@/lib/pdf-generator"
+import { AudioPlayer } from "@/components/audio-player"
 
 interface Medication {
     id: string
@@ -33,6 +35,9 @@ export default function PrescriptionsPage() {
         { id: "1", name: "", dosage: "", frequency: "", duration: "" },
     ])
     const [notes, setNotes] = useState("")
+    const [patientName, setPatientName] = useState("")
+    const [patientAge, setPatientAge] = useState("")
+    const [diagnosis, setDiagnosis] = useState("")
     const [isValidating, setIsValidating] = useState(false)
     const [validation, setValidation] = useState<ValidationResult | null>(null)
 
@@ -141,6 +146,39 @@ export default function PrescriptionsPage() {
                         </h2>
 
                         <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <Label htmlFor="patientName">Patient Name</Label>
+                                    <Input
+                                        id="patientName"
+                                        placeholder="Enter patient name"
+                                        value={patientName}
+                                        onChange={(e) => setPatientName(e.target.value)}
+                                        className="h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="patientAge">Age</Label>
+                                    <Input
+                                        id="patientAge"
+                                        placeholder="Age"
+                                        value={patientAge}
+                                        onChange={(e) => setPatientAge(e.target.value)}
+                                        className="h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="diagnosis">Diagnosis</Label>
+                                <Input
+                                    id="diagnosis"
+                                    placeholder="Primary diagnosis"
+                                    value={diagnosis}
+                                    onChange={(e) => setDiagnosis(e.target.value)}
+                                    className="h-10"
+                                />
+                            </div>
 
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
@@ -211,25 +249,64 @@ export default function PrescriptionsPage() {
                                 />
                             </div>
 
-                            <Button
-                                onClick={handleValidate}
-                                disabled={isValidating || !medications.some((m) => m.name)}
-                                className="w-full h-12 bg-blue-600 hover:bg-blue-700"
-                            >
-                                {isValidating ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="relative">
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            <div className="flex gap-2">
+                                <Button
+                                    onClick={handleValidate}
+                                    disabled={isValidating || !medications.some((m) => m.name)}
+                                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                                >
+                                    {isValidating ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative">
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            </div>
+                                            <span>AI Analyzing...</span>
                                         </div>
-                                        <span>AI Analyzing...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <Brain className="w-4 h-4" />
-                                        <span>Analyze Prescription</span>
-                                    </div>
-                                )}
-                            </Button>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <Brain className="w-4 h-4" />
+                                            <span>Analyze</span>
+                                        </div>
+                                    )}
+                                </Button>
+                                
+                                <Button
+                                    onClick={() => {
+                                        if (!patientName || !medications.some(m => m.name)) {
+                                            toast.error("Missing Information", {
+                                                description: "Please enter patient name and at least one medication"
+                                            })
+                                            return
+                                        }
+                                        
+                                        const prescriptionData = {
+                                            id: Date.now().toString(),
+                                            patientName,
+                                            patientAge: patientAge ? parseInt(patientAge) : undefined,
+                                            doctorName: "Dr. [Your Name]",
+                                            date: new Date().toLocaleDateString(),
+                                            medications: medications.filter(m => m.name).map(m => ({
+                                                name: m.name,
+                                                dosage: m.dosage,
+                                                frequency: m.frequency,
+                                                duration: m.duration,
+                                                instructions: ""
+                                            })),
+                                            diagnosis,
+                                            notes
+                                        }
+                                        
+                                        downloadPrescriptionPDF(prescriptionData)
+                                        toast.success("PDF Downloaded", {
+                                            description: "Prescription has been saved as PDF"
+                                        })
+                                    }}
+                                    variant="outline"
+                                    className="h-12 px-4"
+                                >
+                                    <Download className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     </Card>
 
@@ -253,7 +330,9 @@ export default function PrescriptionsPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
+                            <AudioPlayer text={validation.analysis} />
+
+                            <div className="space-y-3 mt-3">
                                 {validation.analysis.split('\n\n').map((section, index) => {
                                     const lines = section.split('\n')
                                     const title = lines[0]

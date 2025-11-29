@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Pill, MessageSquare, FileText, User, Stethoscope, Calendar } from "lucide-react"
+import { Home, Pill, MessageSquare, FileText, User, Stethoscope, ClipboardList } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
@@ -13,7 +13,7 @@ const navItems = [
     { href: "/chat", icon: MessageSquare, label: "Chat" },
     { href: "/prescription", icon: FileText, label: "Rx" },
     { href: "/diagnosis", icon: Stethoscope, label: "Diagnosis" },
-    // { href: "/scheduler", icon: Calendar, label: "Schedule" },
+    { href: "/care-plans", icon: ClipboardList, label: "Plans" },
     { href: "/profile", icon: User, label: "Profile" },
 ]
 
@@ -27,17 +27,20 @@ export function BottomNav() {
             animate={{ y: 0 }}
             className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl"
         >
-            <div className="bg-card/98 backdrop-blur-xl border-t border-border shadow-2xl safe-area-inset-bottom">
-                <div className="flex items-center justify-around px-1 py-2 sm:px-4 sm:py-3">
+            <div className="bg-white/95 backdrop-blur-xl border-t border-gray-200/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] safe-area-inset-bottom">
+                <div className="flex items-center justify-around px-1 py-2 sm:px-2 sm:py-3">
                     {navItems.map((item) => {
-                        const isActive = pathname === item.href
+                        const isActive = pathname === item.href || (item.href === "/care-plans" && pathname === "/care-plan")
                         const Icon = item.icon
 
                         return (
                             <div key={item.href} className="relative">
                                 <Link
                                     href={item.href}
-                                    className="relative flex flex-col items-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 active:scale-95 touch-manipulation"
+                                    className={cn(
+                                        "relative flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-xl transition-all duration-300 active:scale-95 touch-manipulation",
+                                        isActive && "shadow-lg shadow-primary/25"
+                                    )}
                                     onTouchStart={() => !isActive && setActiveTooltip(item.href)}
                                     onTouchEnd={() => setActiveTooltip(null)}
                                     onTouchCancel={() => setActiveTooltip(null)}
@@ -45,22 +48,27 @@ export function BottomNav() {
                                     {isActive && (
                                         <motion.div
                                             layoutId="activeTab"
-                                            className="absolute inset-0 bg-primary/10 rounded-xl"
+                                            className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl border border-primary/20"
                                             transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                                         />
                                     )}
-                                    <Icon
-                                        className={cn(
-                                            "w-6 h-6 relative z-10 transition-all duration-200",
-                                            isActive ? "text-primary scale-110" : "text-muted-foreground",
-                                        )}
-                                    />
+                                    <div className={cn(
+                                        "relative z-10 transition-all duration-300 rounded-lg p-0.5",
+                                        isActive && "bg-primary/10 shadow-sm"
+                                    )}>
+                                        <Icon
+                                            className={cn(
+                                                "transition-all duration-300",
+                                                isActive ? "w-4 h-4 text-primary" : "w-3.5 h-3.5 text-gray-500",
+                                            )}
+                                        />
+                                    </div>
                                     {isActive && (
                                         <motion.span
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ duration: 0.2 }}
-                                            className="text-xs font-medium relative z-10 text-primary"
+                                            className="text-[10px] font-semibold relative z-10 text-primary"
                                         >
                                             {item.label}
                                         </motion.span>

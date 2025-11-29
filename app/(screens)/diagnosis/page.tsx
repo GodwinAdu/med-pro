@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Stethoscope, Loader2, AlertCircle, Brain, BookOpen, Activity, TestTube } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
+import { AudioPlayer } from "@/components/audio-player"
 import { toast } from "sonner"
 
 interface DiagnosisResult {
@@ -224,6 +225,8 @@ export default function DiagnosisPage() {
                                     Clinical Analysis
                                 </h2>
                                 
+                                <AudioPlayer text={result.analysis} />
+                                
                                 <div className="space-y-4">
                                     {result.analysis.split('\n\n').map((section, index) => {
                                         const lines = section.split('\n')
@@ -257,6 +260,8 @@ export default function DiagnosisPage() {
                                     <TestTube className="w-4 h-4 text-blue-600" />
                                     Recommended Investigations
                                 </h3>
+                                
+                                <AudioPlayer text={result.investigations} />
                                 <div className="text-xs leading-relaxed text-foreground/90 whitespace-pre-wrap">
                                     {result.investigations}
                                 </div>
@@ -268,6 +273,8 @@ export default function DiagnosisPage() {
                                     <BookOpen className="w-4 h-4 text-green-600" />
                                     Clinical References
                                 </h3>
+                                
+                                <AudioPlayer text={result.references} />
                                 <div className="text-xs leading-relaxed text-foreground/90 whitespace-pre-wrap">
                                     {result.references}
                                 </div>

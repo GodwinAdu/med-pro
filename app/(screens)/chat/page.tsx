@@ -3,11 +3,13 @@
 import { useRef, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, Loader2, User, Brain, Copy, Stethoscope, Crown } from "lucide-react"
+import { Send, Loader2, User, Brain, Copy, Stethoscope, Crown, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { AudioPlayer } from "@/components/audio-player"
+import { VoiceRecorder } from "@/components/voice-recorder"
 
 interface Message {
     id: string
@@ -244,16 +246,19 @@ export default function ChatPage() {
                                 </Card>
                                 
                                 {message.role === "assistant" && message.content && (
-                                    <div className="flex items-center gap-2 mt-2 ml-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => copyMessage(message.content)}
-                                            className="h-7 px-2 text-xs"
-                                        >
-                                            <Copy className="w-3 h-3 mr-1" />
-                                            Copy
-                                        </Button>
+                                    <div className="mt-2 ml-2 space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => copyMessage(message.content)}
+                                                className="h-7 px-2 text-xs"
+                                            >
+                                                <Copy className="w-3 h-3 mr-1" />
+                                                Copy
+                                            </Button>
+                                        </div>
+                                        <AudioPlayer text={message.content} />
                                     </div>
                                 )}
                             </div>
@@ -290,7 +295,12 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-border p-3 bg-background">
+            <div className="border-t border-border p-3 bg-background space-y-3">
+                <VoiceRecorder 
+                    onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                    placeholder="Record your medical question..."
+                />
+                
                 <form onSubmit={handleSubmit} className="flex gap-3">
                     <Textarea
                         value={input}
