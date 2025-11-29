@@ -84,29 +84,20 @@ export default function ChatPage() {
                 console.log('Error data received:', errorData)
                 setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId))
                 
-                if (errorData.trialExpired) {
-                    toast.error("Trial Expired", {
-                        description: "Your 14-day trial has ended. Upgrade to continue using MedAssist AI.",
+                if (errorData.insufficientCoins) {
+                    toast.error("Insufficient Coins", {
+                        description: `Need 5 coins to chat. You have ${errorData.coinBalance || 0} coins.`,
                         action: {
-                            label: "Upgrade",
-                            onClick: () => router.push('/pricing')
-                        }
-                    })
-                } else if (errorData.limitReached) {
-                    toast.error("Usage Limit Reached", {
-                        description: `You've used ${errorData.currentUsage}/${errorData.limit} messages this month. Upgrade for unlimited access.`,
-                        action: {
-                            label: "Upgrade",
-                            onClick: () => router.push('/pricing')
+                            label: "Buy Coins",
+                            onClick: () => router.push('/coins')
                         }
                     })
                 } else {
-                    console.log('Showing access restricted toast')
-                    toast.error("Access Restricted", {
-                        description: errorData.error || "Please upgrade to continue using this feature.",
+                    toast.error("Access Denied", {
+                        description: errorData.error || "Unable to access chat feature.",
                         action: {
-                            label: "Upgrade",
-                            onClick: () => router.push('/pricing')
+                            label: "Buy Coins",
+                            onClick: () => router.push('/coins')
                         }
                     })
                 }

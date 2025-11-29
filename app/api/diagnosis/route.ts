@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { checkSubscriptionAccess, trackUsage } from '@/lib/subscription-middleware'
+import { checkCoinAccess, deductCoins } from '@/lib/coin-middleware'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -8,14 +8,12 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const accessCheck = await checkSubscriptionAccess(request, 'diagnosis')
+    const accessCheck = await checkCoinAccess(request, 'diagnosis')
     if (!accessCheck.hasAccess) {
       return NextResponse.json({
         error: accessCheck.error,
-        trialExpired: accessCheck.trialExpired,
-        limitReached: accessCheck.limitReached,
-        currentUsage: accessCheck.currentUsage,
-        limit: accessCheck.limit
+        insufficientCoins: accessCheck.insufficientCoins,
+        coinBalance: accessCheck.coinBalance
       }, { status: 403 })
     }
 
@@ -100,9 +98,9 @@ Be thorough, evidence-based, and include specific medical references where appli
     const referencesMatch = analysis.match(/\*\*CLINICAL REFERENCES:\*\*(.*?)(?=\*\*|$)/s)
     const references = referencesMatch ? referencesMatch[1].trim() : 'Not available'
 
-    // Track usage after successful analysis
+    // Deduct coins after successful analysis
     if (accessCheck.userId) {
-      await trackUsage(accessCheck.userId, 'diagnosis')
+      await deductCoins(accessCheck.userId, 'diagnosis', `Diagnosis analysis: ${symptoms.substring(0, 50)}...`)
     }
 
     return NextResponse.json({

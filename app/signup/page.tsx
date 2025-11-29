@@ -2,14 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Activity, ArrowLeft } from "lucide-react"
+import { Activity, ArrowLeft, Gift } from "lucide-react"
 import Link from "next/link"
 import { registerUser } from "@/lib/actions/register.actons"
 
@@ -20,9 +20,20 @@ export default function SignupPage() {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [role, setRole] = useState<"doctor" | "nurse">("doctor")
+  const [referralCode, setReferralCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  
+  const searchParams = useSearchParams()
  
   const router = useRouter()
+
+  useEffect(() => {
+    // Get referral code from URL parameter
+    const refCode = searchParams.get('ref')
+    if (refCode) {
+      setReferralCode(refCode)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +45,7 @@ export default function SignupPage() {
     
     setIsLoading(true)
     try {
-      const values = { email, password, name, phone, role } 
+      const values = { email, password, name, phone, role, referralCode: referralCode || undefined } 
       await registerUser(values)
       router.push("/login")
     } catch (error) {
@@ -144,6 +155,23 @@ export default function SignupPage() {
                   </Label>
                 </div>
               </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+              <Input
+                id="referralCode"
+                type="text"
+                placeholder="Enter friend's referral code"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toLowerCase())}
+              />
+              {referralCode && (
+                <div className="flex items-center gap-2 text-sm text-green-600">
+                  <Gift className="w-4 h-4" />
+                  <span>You'll get 25 bonus coins!</span>
+                </div>
+              )}
             </div>
 
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-11 sm:h-10" disabled={isLoading}>

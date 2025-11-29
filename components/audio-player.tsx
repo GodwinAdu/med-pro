@@ -1,108 +1,130 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Play, Pause, Volume2, VolumeX } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Play, Pause, Volume2, Loader2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Slider } from "@/components/ui/slider"
+import { useVoice } from "@/hooks/use-voice"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface AudioPlayerProps {
   text: string
   autoPlay?: boolean
+  voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer'
 }
 
-export function AudioPlayer({ text, autoPlay = false }: AudioPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
-  const [rate, setRate] = useState(1)
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
-
-  const speak = () => {
-    if ('speechSynthesis' in window) {
-      // Stop any current speech
-      window.speechSynthesis.cancel()
-      
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.rate = rate
-      utterance.volume = isMuted ? 0 : 1
-      utterance.pitch = 1
-      
-      utterance.onstart = () => setIsPlaying(true)
-      utterance.onend = () => setIsPlaying(false)
-      utterance.onerror = () => {
-        setIsPlaying(false)
-        toast.error("Speech synthesis failed")
+export function AudioPlayer({ text, autoPlay = false, voice = 'alloy' }: AudioPlayerProps) {
+  const router = useRouter()
+  const [isDownloading, setIsDownloading] = useState(false)
+  const { speak, stopSpeaking, isSpeaking, isLoading } = useVoice({
+    onError: (error) => {
+      if (error.includes('Insufficient coins')) {
+        toast.error("Insufficient Coins", {
+          description: "Need 3 coins for text-to-speech.",
+          action: {
+            label: "Buy Coins",
+            onClick: () => router.push('/coins')
+          }
+        })
+      } else {
+        toast.error("Speech Error", { description: error })
       }
-      
-      utteranceRef.current = utterance
-      window.speechSynthesis.speak(utterance)
+    }
+  })
+
+  const handlePlay = () => {
+    if (isSpeaking) {
+      stopSpeaking()
     } else {
-      toast.error("Text-to-speech not supported in this browser")
+      speak(text, voice)
     }
   }
 
-  const stop = () => {
-    window.speechSynthesis.cancel()
-    setIsPlaying(false)
-  }
+  const handleDownload = async () => {
+    setIsDownloading(true)
+    try {
+      const response = await fetch('/api/voice/text-to-speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice }),
+      })
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted)
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = isMuted ? 1 : 0
+      if (response.ok) {
+        const audioBlob = await response.blob()
+        const url = URL.createObjectURL(audioBlob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `audio-${Date.now()}.mp3`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        toast.success("Audio downloaded successfully")
+      } else {
+        const error = await response.json()
+        if (error.insufficientCoins) {
+          toast.error("Insufficient Coins", {
+            description: "Need 3 coins to download audio.",
+            action: {
+              label: "Buy Coins",
+              onClick: () => router.push('/coins')
+            }
+          })
+        } else {
+          toast.error("Download failed", { description: error.error })
+        }
+      }
+    } catch (error) {
+      toast.error("Download failed", { description: "Network error" })
+    } finally {
+      setIsDownloading(false)
     }
   }
 
   useEffect(() => {
-    if (autoPlay && text) {
-      speak()
+    if (autoPlay && text && !isSpeaking) {
+      speak(text, voice)
     }
-    
-    return () => {
-      window.speechSynthesis.cancel()
-    }
-  }, [text, autoPlay])
+  }, [text, autoPlay, voice, speak, isSpeaking])
 
   return (
     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
       <Button
-        onClick={isPlaying ? stop : speak}
+        onClick={handlePlay}
         size="sm"
         variant="outline"
         className="h-8 w-8 p-0"
+        disabled={isLoading}
       >
-        {isPlaying ? (
+        {isLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : isSpeaking ? (
           <Pause className="w-4 h-4" />
         ) : (
           <Play className="w-4 h-4" />
         )}
       </Button>
 
-      <div className="flex items-center gap-2 flex-1">
-        <span className="text-xs text-muted-foreground">Speed:</span>
-        <Slider
-          value={[rate]}
-          onValueChange={(value) => setRate(value[0])}
-          min={0.5}
-          max={2}
-          step={0.1}
-          className="w-20"
-        />
-        <span className="text-xs text-muted-foreground w-8">{rate}x</span>
-      </div>
-
       <Button
-        onClick={toggleMute}
+        onClick={handleDownload}
         size="sm"
-        variant="ghost"
+        variant="outline"
         className="h-8 w-8 p-0"
+        disabled={isDownloading}
       >
-        {isMuted ? (
-          <VolumeX className="w-4 h-4" />
+        {isDownloading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
-          <Volume2 className="w-4 h-4" />
+          <Download className="w-4 h-4" />
         )}
       </Button>
+
+      <div className="flex items-center gap-2 flex-1">
+        <Volume2 className="w-4 h-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">
+          {isLoading ? 'Generating...' : isDownloading ? 'Downloading...' : isSpeaking ? 'Playing...' : 'MedPro Voice'}
+        </span>
+      </div>
     </div>
   )
 }

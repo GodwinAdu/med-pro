@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown } from "lucide-react"
+import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,6 +20,7 @@ export default function ProfilePage() {
     const [notifications, setNotifications] = useState(true)
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [coinBalance, setCoinBalance] = useState<number>(0)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -35,43 +36,24 @@ export default function ProfilePage() {
                 setLoading(false)
             }
         }
+        
+        const fetchCoinBalance = async () => {
+            try {
+                const response = await fetch('/api/coins/balance')
+                if (response.ok) {
+                    const data = await response.json()
+                    setCoinBalance(data.coinBalance)
+                }
+            } catch (error) {
+                console.error('Failed to fetch coin balance:', error)
+            }
+        }
+        
         fetchUser()
+        fetchCoinBalance()
     }, [])
 
-    const getPlanDisplayName = (plan: string) => {
-        switch (plan) {
-            case 'free': return 'Free Trial'
-            case 'basic': return 'Basic Plan'
-            case 'pro': return 'Pro Plan'
-            default: return 'Free Trial'
-        }
-    }
 
-    const isTrialActive = () => {
-        if (!user?.trialEndDate) return false
-        return new Date(user.trialEndDate) > new Date()
-    }
-
-    const getSubscriptionStatus = () => {
-        if (user?.subscriptionPlan === 'pro' || user?.subscriptionPlan === 'basic') {
-            if (user.subscriptionEndDate) {
-                const endDate = new Date(user.subscriptionEndDate)
-                const now = new Date()
-                console.log('Subscription check:', { endDate, now, isActive: endDate > now })
-                return endDate > now ? 'Active' : 'Expired'
-            }
-            return 'Expired'
-        }
-        return isTrialActive() ? 'Trial Active' : 'Trial Expired'
-    }
-
-    const getPlanColor = (plan: string) => {
-        switch (plan) {
-            case 'pro': return 'text-purple-600'
-            case 'basic': return 'text-blue-600'
-            default: return 'text-gray-600'
-        }
-    }
 
     const settingsSections = [
         {
@@ -123,6 +105,7 @@ export default function ProfilePage() {
     ]
 
     const infoLinks = [
+        { label: "Referral Program", icon: User, href: "/referral" },
         { label: "Privacy Policy", icon: Shield },
         { label: "Terms of Service", icon: Info },
         { label: "About", icon: Info },
@@ -158,96 +141,42 @@ export default function ProfilePage() {
                                         <div>
                                             <h2 className="text-lg font-bold">{user?.fullName || 'User'}</h2>
                                             <p className={`text-xs opacity-90`}>
-                                                {getPlanDisplayName(user?.subscriptionPlan || 'free')} • {getSubscriptionStatus()}
+                                                {user?.role || 'Healthcare Professional'}
                                             </p>
                                         </div>
                                     </div>
-                                    {user?.subscriptionPlan !== 'pro' && (
-                                        <Link href="/pricing">
-                                            <Button size="sm" variant="secondary" className="bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground border-0 text-xs px-2 py-1">
-                                                <Crown className="w-3 h-3 mr-1" />
-                                                Upgrade
-                                            </Button>
-                                        </Link>
-                                    )}
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                {/* Upgrade Banner - Only show if not on Pro plan */}
-                {user?.subscriptionPlan !== 'pro' && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
-                        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
-                            <CardContent className="p-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                                            <Crown className="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-xs">Unlock Premium Features</h3>
-                                            <p className="text-xs text-muted-foreground">AI Chat & More</p>
-                                        </div>
+                {/* Coin Balance Card */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
+                    <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-200 dark:border-yellow-800">
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center">
+                                        <Coins className="w-5 h-5 text-white" />
                                     </div>
-                                    <Link href="/pricing">
-                                        <Button size="sm" className="h-7 text-xs px-2">
-                                            View Plans
-                                        </Button>
-                                    </Link>
+                                    <div>
+                                        <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">Coin Balance</h3>
+                                        <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">{coinBalance} coins</p>
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                )}
+                                <Link href="/coins">
+                                    <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white">
+                                        <Coins className="w-4 h-4 mr-1" />
+                                        Buy Coins
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
 
-                {/* Subscription Details */}
-                {user && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Crown className="w-4 h-4 text-primary" />
-                                    Subscription Details
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3 pt-0">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <h3 className="font-medium text-sm">Current Plan</h3>
-                                        <p className="text-xs text-muted-foreground">{getPlanDisplayName(user.subscriptionPlan || 'free')}</p>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-medium text-sm">Status</h3>
-                                        <p className={`text-xs ${
-                                            getSubscriptionStatus().includes('Active') ? 'text-green-600' : 
-                                            getSubscriptionStatus().includes('Expired') ? 'text-red-600' : 'text-yellow-600'
-                                        }`}>
-                                            {getSubscriptionStatus()}
-                                        </p>
-                                    </div>
-                                </div>
-                                {user.subscriptionEndDate && (
-                                    <div>
-                                        <h3 className="font-medium text-sm">Expires On</h3>
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(user.subscriptionEndDate).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                )}
-                                {user.trialEndDate && user.subscriptionPlan === 'free' && (
-                                    <div>
-                                        <h3 className="font-medium text-sm">Trial {isTrialActive() ? 'Ends' : 'Ended'}</h3>
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(user.trialEndDate).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                )}
+
 
                 {/* Settings Sections */}
                 <div className="space-y-3">
@@ -315,7 +244,7 @@ export default function ProfilePage() {
                 >
                     {infoLinks.map((link) => {
                         const LinkIcon = link.icon
-                        return (
+                        const content = (
                             <Button key={link.label} variant="ghost" className="w-full justify-between h-auto py-2 px-3 text-left">
                                 <div className="flex items-center gap-2">
                                     <LinkIcon className="w-4 h-4 text-muted-foreground" />
@@ -323,6 +252,14 @@ export default function ProfilePage() {
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             </Button>
+                        )
+                        
+                        return link.href ? (
+                            <Link key={link.label} href={link.href}>
+                                {content}
+                            </Link>
+                        ) : (
+                            content
                         )
                     })}
                 </motion.div>

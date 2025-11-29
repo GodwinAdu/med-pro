@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { checkSubscriptionAccess, trackUsage } from '@/lib/subscription-middleware'
+import { checkCoinAccess, deductCoins } from '@/lib/coin-middleware'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -8,14 +8,12 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const accessCheck = await checkSubscriptionAccess(request, 'chat')
+    const accessCheck = await checkCoinAccess(request, 'drug-search')
     if (!accessCheck.hasAccess) {
       return NextResponse.json({
         error: accessCheck.error,
-        trialExpired: accessCheck.trialExpired,
-        limitReached: accessCheck.limitReached,
-        currentUsage: accessCheck.currentUsage,
-        limit: accessCheck.limit
+        insufficientCoins: accessCheck.insufficientCoins,
+        coinBalance: accessCheck.coinBalance
       }, { status: 403 })
     }
 
@@ -52,9 +50,9 @@ Be concise and clinically focused.`
       temperature: 0.1
     })
 
-    // Track usage after successful analysis
+    // Deduct coins after successful analysis
     if (accessCheck.userId) {
-      await trackUsage(accessCheck.userId, 'chat')
+      await deductCoins(accessCheck.userId, 'drug-search', `Drug interactions: ${drugs.join(', ')}`)
     }
 
     return NextResponse.json({

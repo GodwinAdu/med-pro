@@ -59,13 +59,13 @@ export default function CarePlanPage() {
 
       if (response.status === 403) {
         const errorData = await response.json()
-        if (errorData.trialExpired) {
-          toast.error("Trial Expired", {
-            description: "Upgrade to continue using care plan generation"
+        if (errorData.insufficientCoins) {
+          toast.error("Insufficient Coins", {
+            description: `Need 15 coins for care plan. You have ${errorData.coinBalance || 0} coins. Buy more to continue.`
           })
-        } else if (errorData.limitReached) {
-          toast.error("Monthly Limit Reached", {
-            description: "Upgrade to generate more care plans"
+        } else {
+          toast.error("Access Denied", {
+            description: errorData.error || "Unable to generate care plan"
           })
         }
         return

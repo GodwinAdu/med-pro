@@ -2,15 +2,15 @@
 
 import { login } from "../helpers/session";
 import User from "../models/user.models";
-import Usage from "../models/usage.models";
 import { connectToDB } from "../mongoose";
 import { compare, hash } from "bcryptjs"
+import { addCoins } from "../coin-middleware";
 
 
 export const registerUser = async (values) => {
     try {
         console.log("Registering user with values:", values);
-        const { email, phone, password, name, role } = values;
+        const { email, phone, password, name, role, referralCode } = values;
 
         // Required fields check
         if (!email || !password || !name ) {
@@ -32,51 +32,33 @@ export const registerUser = async (values) => {
         // Hash password (async)
         const hashedPassword = await hash(password, 12);
 
-        // Create new user with 14-day trial
-        const trialStartDate = new Date();
-        const trialEndDate = new Date(trialStartDate);
-        trialEndDate.setDate(trialStartDate.getDate() + 14);
+        // Handle referral code if provided
+        let referrer = null;
+        if (referralCode) {
+            referrer = await User.findOne({ referralCode: referralCode.toLowerCase() });
+        }
         
         const newUser = await User.create({
-            
-            fullName:name,
+            fullName: name,
             email,
             phone: phone || null,
             password: hashedPassword,
-            subscriptionPlan: "free",
-            subscriptionStartDate: trialStartDate,
-            subscriptionEndDate: trialEndDate,
             role,
+            referredBy: referrer?._id || null,
         });
 
-        // Initialize usage tracking for the new user
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth() + 1;
-        const currentYear = currentDate.getFullYear();
-        
-        await Promise.all([
-            Usage.create({
-                userId: newUser._id,
-                feature: 'chat',
-                month: currentMonth,
-                year: currentYear,
-                count: 0
-            }),
-            Usage.create({
-                userId: newUser._id,
-                feature: 'prescription',
-                month: currentMonth,
-                year: currentYear,
-                count: 0
-            }),
-            Usage.create({
-                userId: newUser._id,
-                feature: 'diagnosis',
-                month: currentMonth,
-                year: currentYear,
-                count: 0
-            })
-        ]);
+        // Handle referral rewards
+        if (referrer) {
+            // Update referrer count
+            referrer.referralCount += 1;
+            await referrer.save();
+            
+            // Give coins to both users
+            await Promise.all([
+                addCoins(referrer._id.toString(), 50, 'bonus', `Referral bonus for referring ${name}`),
+                addCoins(newUser._id.toString(), 25, 'bonus', `Welcome bonus for using referral code ${referralCode}`)
+            ]);
+        }
 
         // Remove password before returning
         const userData = newUser.toObject();

@@ -1,13 +1,15 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar, ClipboardList } from "lucide-react"
+import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar, ClipboardList, Gift, X } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { BottomNav } from "@/components/bottom-nav"
 import { EmergencyMode } from "@/components/emergency-mode"
 import { useEffect, useState } from "react"
 import { currentUser } from "@/lib/helpers/session"
+import { toast } from "sonner"
 
 
 const quickActions = [
@@ -78,13 +80,25 @@ export default function HomePage() {
     [key: string]: string | number | boolean | string[] | undefined;
   } | null>(null)
   const [dailyTips, setDailyTips] = useState<typeof allHealthTips>([])
+  const [canClaimBonus, setCanClaimBonus] = useState(false)
+  const [showBonusNotification, setShowBonusNotification] = useState(false)
 
   useEffect(() => {
-    // Check if user is logged in
+    // Check if user is logged in and can claim bonus
     const checkUser = async () => {
       try {
         const userData = await currentUser()
         setUser(userData)
+        
+        if (userData) {
+          // Check if user can claim daily bonus
+          const response = await fetch('/api/coins/balance')
+          if (response.ok) {
+            const data = await response.json()
+            setCanClaimBonus(data.canClaimDailyBonus)
+            setShowBonusNotification(data.canClaimDailyBonus)
+          }
+        }
       } catch (error) {
         setUser(null)
       }
@@ -116,6 +130,63 @@ export default function HomePage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Daily Bonus Notification */}
+      {user && showBonusNotification && canClaimBonus && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4"
+        >
+          <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center animate-pulse">
+                    <Gift className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-yellow-900">Daily Bonus Available!</h3>
+                    <p className="text-sm text-yellow-700">Claim your free 2 coins today</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/coins/daily-bonus', {
+                          method: 'POST'
+                        })
+                        const data = await response.json()
+                        if (data.success) {
+                          toast.success(data.message)
+                          setShowBonusNotification(false)
+                          setCanClaimBonus(false)
+                        } else {
+                          toast.error(data.message)
+                        }
+                      } catch (error) {
+                        toast.error('Failed to claim bonus')
+                      }
+                    }}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  >
+                    Claim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowBonusNotification(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Quick Actions */}
       <motion.div

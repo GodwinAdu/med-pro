@@ -8,14 +8,11 @@ export interface IUser extends Document {
     role: "doctor" | "nurse";
     isActive: boolean;
     isDeleted: boolean;
-    subscriptionPlan: "free" | "basic" | "pro";
-    subscriptionDuration?: 1 | 3 | 6 | 12;
-    subscriptionStartDate?: Date;
-    subscriptionEndDate?: Date;
-    trialStartDate?: Date;
-    trialEndDate?: Date;
+    coinBalance: number;
+    totalCoinsEarned: number;
+    totalCoinsSpent: number;
+    lastDailyBonus?: Date;
     paystackCustomerId?: string;
-    paystackSubscriptionCode?: string;
     lastLoginAt?: Date;
     lastLogoutAt?: Date;
     loginAttempts: number;
@@ -71,25 +68,40 @@ const UserSchema = new Schema(
             index: true,
         },
 
-        subscriptionPlan: {
-            type: String,
-            enum: ["free", "basic", "pro"],
-            default: "free",
-        },
-
-        subscriptionDuration: {
+        coinBalance: {
             type: Number,
-            enum: [1, 3, 6, 12],
+            default: 20, // New users get 20 free coins
         },
 
-        subscriptionStartDate: { type: Date },
-        subscriptionEndDate: { type: Date },
-        
-        trialStartDate: { type: Date },
-        trialEndDate: { type: Date },
+        totalCoinsEarned: {
+            type: Number,
+            default: 20,
+        },
+
+        totalCoinsSpent: {
+            type: Number,
+            default: 0,
+        },
+
+        referralCode: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+
+        referredBy: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+        },
+
+        referralCount: {
+            type: Number,
+            default: 0,
+        },
+
+        lastDailyBonus: { type: Date },
         
         paystackCustomerId: { type: String },
-        paystackSubscriptionCode: { type: String },
 
         lastLoginAt: { type: Date },
         lastLogoutAt: { type: Date },
@@ -118,46 +130,51 @@ UserSchema.pre(/^find/, function (next) {
 
 UserSchema.pre("save", function (next) {
     this.updatedAt = new Date();
-    if (this.isNew && this.subscriptionPlan === "free") {
-        this.trialStartDate = new Date();
-        this.trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    
+    // Generate referral code if new user
+    if (this.isNew && !this.referralCode) {
+        this.referralCode = this.fullName.replace(/\s+/g, '').toLowerCase() + Math.random().toString(36).substr(2, 4);
     }
+    
     next();
 });
 
-UserSchema.methods.isTrialActive = function () {
-    if (!this.trialEndDate) return false;
-    return this.trialEndDate > new Date();
+UserSchema.methods.canAfford = function (cost: number) {
+    return this.coinBalance >= cost;
 };
 
-UserSchema.methods.isTrialExpired = function () {
-    if (!this.trialEndDate) return true;
-    return this.trialEndDate <= new Date();
-};
-
-UserSchema.methods.canAccessFeatures = function () {
-    if (this.subscriptionPlan === "pro") return true;
-    if (this.subscriptionPlan === "basic") return true;
-    if (this.subscriptionPlan === "free") return this.isTrialActive();
+UserSchema.methods.deductCoins = function (cost: number) {
+    if (this.coinBalance >= cost) {
+        this.coinBalance -= cost;
+        this.totalCoinsSpent += cost;
+        return true;
+    }
     return false;
 };
 
-UserSchema.methods.getUsageLimits = function () {
-    switch (this.subscriptionPlan) {
-        case "pro":
-            return { chatMessages: -1, prescriptions: -1, diagnoses: -1 };
-        case "basic":
-            return { chatMessages: 100, prescriptions: 20, diagnoses: 10 };
-        case "free":
-            return this.isTrialActive() 
-                ? { chatMessages: 10, prescriptions: 5, diagnoses: 3 }
-                : { chatMessages: 0, prescriptions: 0, diagnoses: 0 };
-        default:
-            return { chatMessages: 0, prescriptions: 0, diagnoses: 0 };
+UserSchema.methods.addCoins = function (amount: number) {
+    this.coinBalance += amount;
+    this.totalCoinsEarned += amount;
+};
+
+UserSchema.methods.canClaimDailyBonus = function () {
+    if (!this.lastDailyBonus) return true;
+    const today = new Date();
+    const lastBonus = new Date(this.lastDailyBonus);
+    return today.toDateString() !== lastBonus.toDateString();
+};
+
+UserSchema.methods.claimDailyBonus = function () {
+    if (this.canClaimDailyBonus()) {
+        this.addCoins(2);
+        this.lastDailyBonus = new Date();
+        return true;
     }
+    return false;
 };
 
 UserSchema.index({ email: 1 });
+UserSchema.index({ coinBalance: 1 });
 
 const User = models.User || model("User", UserSchema);
 

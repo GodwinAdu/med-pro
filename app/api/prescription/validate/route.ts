@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { checkSubscriptionAccess, trackUsage } from '@/lib/subscription-middleware'
+import { checkCoinAccess, deductCoins } from '@/lib/coin-middleware'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -16,14 +16,12 @@ interface Medication {
 
 export async function POST(request: NextRequest) {
   try {
-    const accessCheck = await checkSubscriptionAccess(request, 'prescription')
+    const accessCheck = await checkCoinAccess(request, 'prescription')
     if (!accessCheck.hasAccess) {
       return NextResponse.json({
         error: accessCheck.error,
-        trialExpired: accessCheck.trialExpired,
-        limitReached: accessCheck.limitReached,
-        currentUsage: accessCheck.currentUsage,
-        limit: accessCheck.limit
+        insufficientCoins: accessCheck.insufficientCoins,
+        coinBalance: accessCheck.coinBalance
       }, { status: 403 })
     }
 
@@ -176,9 +174,9 @@ If drugs cannot be used together, provide specific alternative drug names with s
       riskLevel = 'warning'
     }
 
-    // Track usage after successful validation
+    // Deduct coins after successful validation
     if (accessCheck.userId) {
-      await trackUsage(accessCheck.userId, 'prescription')
+      await deductCoins(accessCheck.userId, 'prescription', `Prescription validation: ${validMedications.length} medications`)
     }
 
     return NextResponse.json({

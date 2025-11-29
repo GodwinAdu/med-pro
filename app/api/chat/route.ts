@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { checkSubscriptionAccess, trackUsage } from '@/lib/subscription-middleware'
+import { checkCoinAccess, deductCoins } from '@/lib/coin-middleware'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -35,15 +35,13 @@ IMPORTANT: Always end responses with a medical disclaimer emphasizing that this 
 
 export async function POST(request: NextRequest) {
   try {
-    const accessCheck = await checkSubscriptionAccess(request, 'chat')
+    const accessCheck = await checkCoinAccess(request, 'chat')
    
     if (!accessCheck.hasAccess) {
       return NextResponse.json({
         error: accessCheck.error,
-        trialExpired: accessCheck.trialExpired,
-        limitReached: accessCheck.limitReached,
-        currentUsage: accessCheck.currentUsage,
-        limit: accessCheck.limit
+        insufficientCoins: accessCheck.insufficientCoins,
+        coinBalance: accessCheck.coinBalance
       }, { status: 403 })
     }
 
@@ -53,9 +51,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No messages provided' }, { status: 400 })
     }
 
-    // Track usage before processing
+    // Deduct coins before processing
     if (accessCheck.userId) {
-      await trackUsage(accessCheck.userId, 'chat')
+      await deductCoins(accessCheck.userId, 'chat', `Chat message: ${messages[messages.length - 1]?.content?.substring(0, 50)}...`)
     }
 
     const stream = await openai.chat.completions.create({

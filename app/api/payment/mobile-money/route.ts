@@ -1,76 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@/lib/helpers/session'
+import { NextResponse } from 'next/server'
 
-interface MobileMoneyRequest {
-  plan: 'basic' | 'pro'
-  duration: 1 | 3 | 6 | 12
-}
-
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
-
-export async function POST(request: NextRequest) {
-  try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { plan, duration }: MobileMoneyRequest = await request.json()
-    
-    if (!plan || !['basic', 'pro'].includes(plan)) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
-    }
-
-    if (!duration || ![1, 3, 6, 12].includes(duration)) {
-      return NextResponse.json({ error: 'Invalid duration' }, { status: 400 })
-    }
-
-    const monthlyPrice = plan === 'basic' ? 7000 : 15000 // Amount in pesewas (GHS)
-    
-    // Apply discounts: 3 months = 5%, 6 months = 10%, 12 months = 15%
-    const discountRates = { 1: 0, 3: 0.05, 6: 0.10, 12: 0.15 }
-    const baseAmount = monthlyPrice * duration
-    const discount = baseAmount * discountRates[duration]
-    const totalAmount = Math.round(baseAmount - discount)
-
-    const response = await fetch('https://api.paystack.co/transaction/initialize', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: user.email,
-        amount: totalAmount,
-        currency: 'GHS',
-        callback_url: `${process.env.APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/payment/mobile-money/callback`,
-        channels: ['mobile_money'],
-        metadata: {
-          userId: user._id,
-          plan: plan,
-          duration: duration,
-          fullName: user.fullName,
-          paymentType: 'one-time'
-        }
-      })
-    })
-
-    const data = await response.json()
-    
-    if (!data.status) {
-      throw new Error(data.message || 'Payment initialization failed')
-    }
-
-    return NextResponse.json({
-      authorization_url: data.data.authorization_url,
-      access_code: data.data.access_code,
-      reference: data.data.reference
-    })
-
-  } catch (error) {
-    console.error('Mobile money payment error:', error)
-    return NextResponse.json({ 
-      error: 'Failed to initialize mobile money payment' 
-    }, { status: 500 })
-  }
+// This route has been deprecated - the app now uses a coin-based system
+// Coin purchases are handled by /api/coins/purchase
+export async function POST() {
+  return NextResponse.json({ 
+    error: 'This payment method is no longer supported. Please use the coin purchase system.' 
+  }, { status: 410 })
 }
