@@ -17,7 +17,7 @@ export default function AboutPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold">About Doctor AI</h1>
+            <h1 className="text-xl font-bold">About MedPro</h1>
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
           </div>
         </div>
@@ -40,7 +40,7 @@ export default function AboutPage() {
               What We Do
             </h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Doctor AI is a comprehensive medical assistant app designed for healthcare professionals, 
+              MedPro is a comprehensive medical assistant app designed for healthcare professionals, 
               students, and medical practitioners. We combine artificial intelligence with medical expertise 
               to provide reliable, efficient healthcare support.
             </p>
@@ -74,7 +74,7 @@ export default function AboutPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Why Choose Doctor AI?
+              Why Choose MedPro?
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -111,7 +111,7 @@ export default function AboutPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-3">Our Story</h3>
             <p className="text-sm text-muted-foreground">
-              Founded by a team of healthcare professionals and AI experts, Doctor AI was born from the need 
+              Founded by a team of healthcare professionals and AI experts, MedPro was born from the need 
               to bridge the gap between advanced medical knowledge and practical healthcare delivery. 
               We believe technology should enhance, not replace, the human touch in medicine.
             </p>
@@ -202,13 +202,13 @@ export default function AboutPage() {
 
           <Card className="p-4 bg-gradient-to-br from-green-50 to-white border-green-200">
             <p className="text-sm text-green-800 text-center">
-              <strong>Thank you</strong> for choosing Doctor AI to support your healthcare journey. 
+              <strong>Thank you</strong> for choosing MedPro to support your healthcare journey. 
               Together, we're making quality healthcare more accessible.
             </p>
           </Card>
 
           <div className="text-center text-xs text-muted-foreground py-4">
-            © 2024 Doctor AI. All rights reserved.
+            ©{new Date().getFullYear()} MedPro. All rights reserved.
           </div>
         </div>
       </div>

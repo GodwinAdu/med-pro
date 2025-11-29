@@ -5,7 +5,7 @@ export interface ICoinTransaction extends Document {
     type: "purchase" | "usage" | "bonus" | "refund";
     amount: number;
     description: string;
-    feature?: "chat" | "diagnosis" | "prescription" | "care-plan" | "drug-search" | "voice-tts" | "voice-stt";
+    feature?: "chat" | "diagnosis" | "prescription" | "care-plan" | "drug-search" | "voice-tts" | "voice-stt" | "notes";
     paystackReference?: string;
     balanceAfter: number;
     createdAt: Date;
@@ -38,7 +38,7 @@ const CoinTransactionSchema = new Schema(
 
         feature: {
             type: String,
-            enum: ["chat", "diagnosis", "prescription", "care-plan", "drug-search", "voice-tts", "voice-stt"],
+            enum: ["chat", "diagnosis", "prescription", "care-plan", "drug-search", "voice-tts", "voice-stt", "notes"],
         },
 
         paystackReference: {

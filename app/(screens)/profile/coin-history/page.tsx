@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
-import { History, ArrowLeft, TrendingUp, TrendingDown, Coins, Calendar } from "lucide-react"
+import { History, ArrowLeft, TrendingUp, TrendingDown, Coins, Calendar, X } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 
@@ -23,6 +24,7 @@ interface CoinTransaction {
 export default function CoinHistoryPage() {
   const [transactions, setTransactions] = useState<CoinTransaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedTransaction, setSelectedTransaction] = useState<CoinTransaction | null>(null)
   const [stats, setStats] = useState({
     totalEarned: 0,
     totalSpent: 0,
@@ -149,7 +151,7 @@ export default function CoinHistoryPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card className="p-4">
+                <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setSelectedTransaction(transaction)}>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                       {getTransactionIcon(transaction.type)}
@@ -179,6 +181,61 @@ export default function CoinHistoryPage() {
           </div>
         )}
       </div>
+
+      {/* Transaction Details Modal */}
+      <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedTransaction && getTransactionIcon(selectedTransaction.type)}
+              Transaction Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className={`text-2xl font-bold ${getTransactionColor(selectedTransaction.type)}`}>
+                  {selectedTransaction.amount > 0 ? '+' : ''}{selectedTransaction.amount} coins
+                </div>
+                <div className="text-sm text-muted-foreground capitalize">
+                  {selectedTransaction.type}
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Description</label>
+                  <p className="text-sm">{selectedTransaction.description}</p>
+                </div>
+                
+                {selectedTransaction.feature && (
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Feature Used</label>
+                    <p className="text-sm capitalize">{selectedTransaction.feature}</p>
+                  </div>
+                )}
+                
+                {selectedTransaction.paystackReference && (
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Payment Reference</label>
+                    <p className="text-sm font-mono text-xs">{selectedTransaction.paystackReference}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Date & Time</label>
+                  <p className="text-sm">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Balance After</label>
+                  <p className="text-sm font-medium">{selectedTransaction.balanceAfter} coins</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

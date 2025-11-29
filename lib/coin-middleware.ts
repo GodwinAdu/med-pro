@@ -13,6 +13,7 @@ export const FEATURE_COSTS = {
   'drug-search': 2,
   'voice-tts': 3,
   'voice-stt': 3,
+  notes: 10,
 } as const
 
 export type FeatureType = keyof typeof FEATURE_COSTS

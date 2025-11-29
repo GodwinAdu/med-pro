@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins, LogOut, Edit, History } from "lucide-react"
+import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins, LogOut, Edit, History, Trash2, AlertTriangle } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { currentUser, logout } from "@/lib/helpers/session"
 import { toast } from "sonner"
@@ -25,6 +27,9 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true)
     const [coinBalance, setCoinBalance] = useState<number>(0)
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [deleteConfirmation, setDeleteConfirmation] = useState('')
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -117,6 +122,38 @@ export default function ProfilePage() {
             toast.error('Failed to logout')
         } finally {
             setIsLoggingOut(false)
+        }
+    }
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmation !== 'DELETE') {
+            toast.error('Please type DELETE to confirm')
+            return
+        }
+
+        setIsDeleting(true)
+        try {
+            const response = await fetch('/api/user/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+
+            if (response.ok) {
+                toast.success('Account deleted successfully')
+                await logout('/login')
+            } else {
+                const error = await response.json()
+                toast.error(error.message || 'Failed to delete account')
+            }
+        } catch (error) {
+            console.error('Delete account error:', error)
+            toast.error('Failed to delete account')
+        } finally {
+            setIsDeleting(false)
+            setShowDeleteDialog(false)
+            setDeleteConfirmation('')
         }
     }
 
@@ -344,6 +381,86 @@ export default function ProfilePage() {
                     </Button>
                 </motion.div>
 
+                {/* Delete Account */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.75 }}
+                    className="mt-3"
+                >
+                    <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                        <DialogTrigger asChild>
+                            <Button 
+                                variant="ghost" 
+                                className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 border border-red-200"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Account
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-red-600">
+                                    <AlertTriangle className="w-5 h-5" />
+                                    Delete Account
+                                </DialogTitle>
+                                <DialogDescription className="text-left">
+                                    This action cannot be undone. This will permanently delete your account, 
+                                    all your medical data, prescriptions, care plans, and coin balance.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                    <p className="text-sm text-red-800 font-medium mb-2">What will be deleted:</p>
+                                    <ul className="text-xs text-red-700 space-y-1">
+                                        <li>• All medical records and chat history</li>
+                                        <li>• Prescriptions and care plans</li>
+                                        <li>• Coin balance ({coinBalance} coins)</li>
+                                        <li>• Account preferences and settings</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Type <span className="font-bold text-red-600">DELETE</span> to confirm:
+                                    </label>
+                                    <Input
+                                        value={deleteConfirmation}
+                                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                        placeholder="Type DELETE here"
+                                        className="mt-1"
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => {
+                                        setShowDeleteDialog(false)
+                                        setDeleteConfirmation('')
+                                    }}
+                                    disabled={isDeleting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="destructive" 
+                                    onClick={handleDeleteAccount}
+                                    disabled={isDeleting || deleteConfirmation !== 'DELETE'}
+                                >
+                                    {isDeleting ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            <span>Deleting...</span>
+                                        </div>
+                                    ) : (
+                                        'Delete Account'
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </motion.div>
+
                 {/* App Version */}
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -351,8 +468,8 @@ export default function ProfilePage() {
                     transition={{ delay: 0.8 }}
                     className="mt-6 text-center text-xs text-muted-foreground"
                 >
-                    <p>Doctor Assistance v1.0.0</p>
-                    <p className="text-xs mt-1">Built with Next.js & AI</p>
+                    <p>MedPro v1.0.0</p>
+                    <p className="text-xs mt-1">Built with Love ❤️</p>
                 </motion.div>
             </div>
 

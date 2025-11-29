@@ -1,18 +1,28 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar, ClipboardList, Gift, X } from "lucide-react"
+import { Heart, Pill, MessageSquare, FileText, Sparkles, Activity, Stethoscope, Calendar, ClipboardList, Gift, X, StickyNote, Plus, Save } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { BottomNav } from "@/components/bottom-nav"
 import { EmergencyMode } from "@/components/emergency-mode"
 import { useEffect, useState } from "react"
 import { currentUser } from "@/lib/helpers/session"
 import { toast } from "sonner"
+import { useNotesStore } from "@/lib/stores/notes-store"
 
 
 const quickActions = [
+  {
+    title: "Nurses/Doctors Notes",
+    description: "Add clinical notes",
+    icon: StickyNote,
+    href: "/notes",
+    gradient: "from-yellow-500 to-orange-500",
+  },
   {
     title: "Search Drugs",
     description: "Find drug information",
@@ -82,6 +92,10 @@ export default function HomePage() {
   const [dailyTips, setDailyTips] = useState<typeof allHealthTips>([])
   const [canClaimBonus, setCanClaimBonus] = useState(false)
   const [showBonusNotification, setShowBonusNotification] = useState(false)
+  const { notes, addNote, deleteNote } = useNotesStore()
+  const [newNote, setNewNote] = useState('')
+  const [newNoteTitle, setNewNoteTitle] = useState('')
+  const [showAddNote, setShowAddNote] = useState(false)
 
   useEffect(() => {
     // Check if user is logged in and can claim bonus
@@ -116,6 +130,22 @@ export default function HomePage() {
     ]
     setDailyTips(selectedTips)
   }, [])
+
+  const saveNote = () => {
+    if (!newNote.trim()) return
+    
+    addNote(newNoteTitle, newNote)
+    
+    setNewNote('')
+    setNewNoteTitle('')
+    setShowAddNote(false)
+    toast.success('Note saved successfully')
+  }
+
+  const handleDeleteNote = (id: string) => {
+    deleteNote(id)
+    toast.success('Note deleted')
+  }
 
   return (
     <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20 p-3 sm:p-6 lg:p-8 bottom-nav-spacing">
@@ -199,6 +229,9 @@ export default function HomePage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action, index) => {
             const Icon = action.icon
+            
+
+            
             return (
               <motion.div
                 key={action.title}
@@ -227,11 +260,135 @@ export default function HomePage() {
         </div>
       </motion.div>
 
+      {/* Quick Notes */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <StickyNote className="w-5 h-5 text-primary" />
+              Quick Notes
+            </h2>
+            <div className="flex gap-2">
+              <Link href="/notes">
+                <Button size="sm" variant="outline">
+                  View All
+                </Button>
+              </Link>
+              <Button
+                size="sm"
+                onClick={() => setShowAddNote(!showAddNote)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Note
+              </Button>
+            </div>
+          </div>
+
+          {/* Add Note Form */}
+          {showAddNote && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-4"
+            >
+              <Card className="border-2 border-primary/20">
+                <CardContent className="p-4 space-y-3">
+                  <Input
+                    placeholder="Clinical note title (optional)"
+                    value={newNoteTitle}
+                    onChange={(e) => setNewNoteTitle(e.target.value)}
+                    className="border-2 focus:border-primary"
+                  />
+                  <Textarea
+                    placeholder="Write your clinical note here... (patient observations, assessments, care instructions, etc.)"
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    className="min-h-[100px] border-2 focus:border-primary resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <Button onClick={saveNote} size="sm" className="flex-1">
+                      <Save className="w-4 h-4 mr-1" />
+                      Save Note
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setShowAddNote(false)
+                        setNewNote('')
+                        setNewNoteTitle('')
+                      }} 
+                      variant="outline" 
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Notes List */}
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {notes.length === 0 ? (
+              <Card className="bg-muted/30">
+                <CardContent className="p-4 text-center">
+                  <StickyNote className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    No clinical notes yet. Add your first note to keep track of patient observations and care instructions.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              notes.map((note, index) => (
+                <motion.div
+                  key={note.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 hover:shadow-md transition-shadow">
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm text-yellow-900 truncate">
+                            {note.title}
+                          </h4>
+                          <p className="text-sm text-yellow-800 mt-1 line-clamp-2">
+                            {note.content}
+                          </p>
+                          <p className="text-xs text-yellow-600 mt-2">
+                            {note.timestamp}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteNote(note.id)}
+                          className="text-yellow-700 hover:text-red-600 hover:bg-red-50 p-1 h-auto"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Health Tips */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.6 }}
         className="mb-6"
       >
         <h2 className="text-lg font-semibold mb-3">Daily Health Tips</h2>
@@ -243,7 +400,7 @@ export default function HomePage() {
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
               >
                 <Card className="bg-gradient-to-r from-card to-muted/30">
                   <CardContent className="p-3">
