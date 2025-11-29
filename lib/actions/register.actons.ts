@@ -38,6 +38,9 @@ export const registerUser = async (values) => {
             referrer = await User.findOne({ referralCode: referralCode.toLowerCase() });
         }
         
+        // Generate referral code for new user
+        const newUserReferralCode = name.replace(/\s+/g, '').toLowerCase() + Math.random().toString(36).substr(2, 4);
+        
         const newUser = await User.create({
             fullName: name,
             email,
@@ -45,6 +48,7 @@ export const registerUser = async (values) => {
             password: hashedPassword,
             role,
             referredBy: referrer?._id || null,
+            referralCode: newUserReferralCode
         });
 
         // Handle referral rewards

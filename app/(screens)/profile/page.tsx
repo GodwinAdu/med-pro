@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins } from "lucide-react"
+import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins, LogOut, Edit, History } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,15 +12,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { currentUser } from "@/lib/helpers/session"
+import { currentUser, logout } from "@/lib/helpers/session"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
     const { theme, setTheme } = useTheme()
+    const router = useRouter()
     const [language, setLanguage] = useState("en")
     const [notifications, setNotifications] = useState(true)
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [coinBalance, setCoinBalance] = useState<number>(0)
+    const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -104,11 +108,29 @@ export default function ProfilePage() {
         },
     ]
 
-    const infoLinks = [
+    const handleLogout = async () => {
+        setIsLoggingOut(true)
+        try {
+            await logout()
+            toast.success('Logged out successfully')
+            router.push('/login')
+        } catch (error) {
+            toast.error('Failed to logout')
+        } finally {
+            setIsLoggingOut(false)
+        }
+    }
+
+    const accountLinks = [
+        { label: "Edit Profile", icon: Edit, href: "/profile/edit" },
+        { label: "Coin Usage History", icon: History, href: "/profile/coin-history" },
         { label: "Referral Program", icon: User, href: "/referral" },
-        { label: "Privacy Policy", icon: Shield },
-        { label: "Terms of Service", icon: Info },
-        { label: "About", icon: Info },
+    ]
+
+    const infoLinks = [
+        { label: "Privacy Policy", icon: Shield, href: "/privacy" },
+        { label: "Terms of Service", icon: Info, href: "/terms" },
+        { label: "About", icon: Info, href: "/about" },
     ]
 
     return (
@@ -235,11 +257,45 @@ export default function ProfilePage() {
                     })}
                 </div>
 
-                {/* Info Links */}
+                {/* Account Links */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
+                    className="mt-4"
+                >
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Account</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-1 pt-0">
+                            {accountLinks.map((link) => {
+                                const LinkIcon = link.icon
+                                const content = (
+                                    <Button key={link.label} variant="ghost" className="w-full justify-between h-auto py-2 px-3 text-left">
+                                        <div className="flex items-center gap-2">
+                                            <LinkIcon className="w-4 h-4 text-muted-foreground" />
+                                            <span className="text-sm">{link.label}</span>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                                    </Button>
+                                )
+                                
+                                return (
+                                    <Link key={link.label} href={link.href}>
+                                        {content}
+                                    </Link>
+                                )
+                            })}
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Info Links */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
                     className="mt-4 space-y-1"
                 >
                     {infoLinks.map((link) => {
@@ -254,21 +310,46 @@ export default function ProfilePage() {
                             </Button>
                         )
                         
-                        return link.href ? (
+                        return (
                             <Link key={link.label} href={link.href}>
                                 {content}
                             </Link>
-                        ) : (
-                            content
                         )
                     })}
+                </motion.div>
+
+                {/* Logout Button */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="mt-4"
+                >
+                    <Button 
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        variant="outline" 
+                        className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                        {isLoggingOut ? (
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                                <span>Logging out...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
+                            </div>
+                        )}
+                    </Button>
                 </motion.div>
 
                 {/* App Version */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
+                    transition={{ delay: 0.8 }}
                     className="mt-6 text-center text-xs text-muted-foreground"
                 >
                     <p>Doctor Assistance v1.0.0</p>
