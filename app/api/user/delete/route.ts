@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDB } from '@/lib/mongoose'
 import User from '@/lib/models/user.models'
-import { CoinTransaction } from '@/lib/models/coin-transaction.models'
-import { currentUser } from '@/lib/helpers/session'
+import CoinTransaction from '@/lib/models/coin-transaction.models'
+import { Note } from '@/lib/models/notes.models'
+import  CarePlan  from '@/lib/models/care-plan.models'
+import  UserPreferences  from '@/lib/models/preferences.models'
+import { currentUser, logout } from '@/lib/helpers/session'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -13,40 +16,22 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Soft delete the user account (mark as deleted instead of hard delete)
-    const deletedUser = await User.findByIdAndUpdate(
-      user._id,
-      {
-        isDeleted: true,
-        isActive: false,
-        deletedAt: new Date(),
-        // Clear sensitive data
-        email: `deleted_${user._id}@deleted.com`,
-        phone: null,
-        paystackCustomerId: null,
-        coinBalance: 0,
-        updatedAt: new Date()
-      },
-      { new: true }
-    )
+    const userId = user._id
 
-    if (!deletedUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    // Delete all user data in parallel
+    await Promise.all([
+      CoinTransaction.deleteMany({ userId }),
+      Note.deleteMany({ userId }),
+      CarePlan.deleteMany({ userId }),
+      UserPreferences.deleteMany({ userId }),
+      User.findByIdAndDelete(userId)
+    ])
 
-    // Create a final transaction record for account deletion
-    await CoinTransaction.create({
-      userId: user._id,
-      type: 'usage',
-      amount: -user.coinBalance || 0,
-      description: 'Account deletion - coins forfeited',
-      balanceAfter: 0,
-      createdAt: new Date()
-    })
+    // Logout user by clearing cookies
+    await logout('/login')
 
     return NextResponse.json({
-      message: 'Account deleted successfully',
-      deletedAt: deletedUser.deletedAt
+      message: 'Account and all data deleted permanently'
     })
 
   } catch (error) {
