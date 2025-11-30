@@ -59,7 +59,7 @@ export function BottomNav() {
                                         <Icon
                                             className={cn(
                                                 "transition-all duration-300",
-                                                isActive ? "w-4 h-4 text-primary" : "w-3.5 h-3.5 text-gray-500",
+                                                isActive ? "w-6 h-6 text-primary" : "w-4 h-4 text-gray-500",
                                             )}
                                         />
                                     </div>
