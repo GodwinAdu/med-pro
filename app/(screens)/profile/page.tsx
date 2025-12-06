@@ -270,6 +270,35 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                 </motion.div>
+                 {/* Credit Balance Card */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
+                    <Card className="bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 dark:from-yellow-950 dark:via-orange-950 dark:to-yellow-950 border-yellow-200 dark:border-yellow-800 shadow-md">
+                        <CardContent className="p-5">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <Coins className="w-7 h-7 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-medium text-yellow-700 dark:text-yellow-300 mb-1">Available Credits</h3>
+                                    <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">{coinBalance}</p>
+                                </div>
+                            </div>
+                            <Link href="/coins" className="block">
+                                <Button className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white shadow-md h-11">
+                                    <Coins className="w-4 h-4 mr-2" />
+                                    Buy More Credits
+                                </Button>
+                            </Link>
+                            <Link href="/profile/coin-history" className="block mt-2">
+                                <Button variant="ghost" className="w-full text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 h-9">
+                                    <History className="w-4 h-4 mr-2" />
+                                    View History
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
 
                 {/* Quick Actions */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
@@ -333,31 +362,7 @@ export default function ProfilePage() {
                     </Card>
                 </motion.div>
 
-                {/* Coin Balance Card */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
-                    <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-200 dark:border-yellow-800">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center">
-                                        <Coins className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">Credit Balance</h3>
-                                        <p className="text-md md:text-2xl font-bold text-yellow-800 dark:text-yellow-200">{coinBalance} credits</p>
-                                    </div>
-                                </div>
-                                <Link href="/coins">
-                                    <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white">
-                                        <Coins className="w-4 h-4 mr-1" />
-                                        Buy Credits
-                                    </Button>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
+               
 
 
                 {/* Settings Sections */}

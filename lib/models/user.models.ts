@@ -123,20 +123,17 @@ const UserSchema = new Schema(
     }
 );
 
-UserSchema.pre(/^find/, function (next) {
+UserSchema.pre(/^find/, function () {
     (this as Query<IUser[], IUser>).find({ isDeleted: false });
-    next();
 });
 
-UserSchema.pre("save", function (next) {
+UserSchema.pre("save", function () {
     this.updatedAt = new Date();
     
     // Generate referral code if new user
     if (this.isNew && !this.referralCode) {
         this.referralCode = this.fullName.replace(/\s+/g, '').toLowerCase() + Math.random().toString(36).substr(2, 4);
     }
-    
-    next();
 });
 
 UserSchema.methods.canAfford = function (cost: number) {
