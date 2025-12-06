@@ -136,6 +136,20 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
+  
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background-size: 200% 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Mobile performance optimizations */

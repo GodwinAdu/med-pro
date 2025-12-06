@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Stethoscope, Loader2, AlertCircle, Brain, BookOpen, Activity, TestTube } from "lucide-react"
+import { Stethoscope, Loader2, AlertCircle, Brain, BookOpen, Activity, TestTube, History, RotateCcw, Copy, Download, Share2 } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { AudioPlayer } from "@/components/audio-player"
@@ -24,12 +24,66 @@ interface DiagnosisResult {
 
 export default function DiagnosisPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [symptoms, setSymptoms] = useState("")
     const [patientAge, setPatientAge] = useState("")
     const [medicalHistory, setMedicalHistory] = useState("")
     const [vitalSigns, setVitalSigns] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [result, setResult] = useState<DiagnosisResult | null>(null)
+
+    useEffect(() => {
+        const diagnosisId = searchParams.get('id')
+        if (diagnosisId) {
+            loadDiagnosis(diagnosisId)
+        }
+    }, [searchParams])
+
+    const loadDiagnosis = async (id: string) => {
+        try {
+            const response = await fetch(`/api/diagnosis/get?id=${id}`)
+            if (response.ok) {
+                const data = await response.json()
+                const { diagnosis } = data
+                
+                setSymptoms(diagnosis.symptoms)
+                setPatientAge(diagnosis.patientAge || '')
+                setMedicalHistory(diagnosis.medicalHistory || '')
+                setVitalSigns(diagnosis.vitalSigns || '')
+                if (diagnosis.result) {
+                    setResult(diagnosis.result)
+                }
+                toast.success('Diagnosis loaded')
+            }
+        } catch (error) {
+            console.error('Failed to load diagnosis:', error)
+            toast.error('Failed to load diagnosis')
+        }
+    }
+
+    const saveDiagnosis = async () => {
+        if (!symptoms || !result) return
+
+        try {
+            const response = await fetch('/api/diagnosis/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symptoms,
+                    patientAge,
+                    medicalHistory,
+                    vitalSigns,
+                    result
+                })
+            })
+
+            if (response.ok) {
+                toast.success('Diagnosis saved to history')
+            }
+        } catch (error) {
+            console.error('Failed to save diagnosis:', error)
+        }
+    }
 
     const handleAnalyze = async () => {
         if (!symptoms.trim()) return
@@ -79,6 +133,8 @@ export default function DiagnosisPage() {
 
             const data = await response.json()
             setResult(data)
+            // Auto-save after analysis
+            setTimeout(() => saveDiagnosis(), 500)
         } catch (error) {
             console.error("Diagnosis failed:", error)
             toast.error("Analysis Failed", {
@@ -104,11 +160,38 @@ export default function DiagnosisPage() {
     return (
         <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
             <div className="min-h-screen bottom-nav-spacing p-3 sm:p-6 lg:p-8">
-                <PageHeader
-                    title="Clinical Diagnosis"
-                    subtitle="AI-powered differential diagnosis with references"
-                    icon={<Brain className="w-6 h-6" />}
-                />
+                <div className="flex items-center justify-between mb-6">
+                    <PageHeader
+                        title="Diagnosis"
+                        subtitle="AI-powered differential diagnosis with references"
+                        icon={<Brain className="w-6 h-6" />}
+                    />
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setSymptoms('')
+                                setPatientAge('')
+                                setMedicalHistory('')
+                                setVitalSigns('')
+                                setResult(null)
+                                toast.success('Form cleared')
+                            }}
+                            className="h-9"
+                        >
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push('/diagnosis/history')}
+                            className="h-9"
+                        >
+                            <History className="w-4 h-4 mr-1" />
+                        </Button>
+                    </div>
+                </div>
 
                 <div className="space-y-4">
                     <Card className="p-4">
@@ -225,7 +308,27 @@ export default function DiagnosisPage() {
                                     Clinical Analysis
                                 </h2>
                                 
-                                <AudioPlayer text={result.analysis} />
+                                <div className="flex items-center gap-2 mb-3">
+                                    <AudioPlayer text={result.analysis} />
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            const fullReport = `CLINICAL DIAGNOSIS REPORT\n\n` +
+                                                `Urgency: ${urgencyLabels[result.urgencyLevel]}\n\n` +
+                                                `CLINICAL ANALYSIS:\n${result.analysis}\n\n` +
+                                                `RECOMMENDED INVESTIGATIONS:\n${result.investigations}\n\n` +
+                                                `CLINICAL REFERENCES:\n${result.references}\n\n` +
+                                                `DISCLAIMER:\n${result.disclaimer}`
+                                            navigator.clipboard.writeText(fullReport)
+                                            toast.success('Full report copied to clipboard')
+                                        }}
+                                        className="h-7 px-2 text-xs"
+                                    >
+                                        <Copy className="w-3 h-3 mr-1" />
+                                        Copy All
+                                    </Button>
+                                </div>
                                 
                                 <div className="space-y-4">
                                     {result.analysis.split('\n\n').map((section, index) => {

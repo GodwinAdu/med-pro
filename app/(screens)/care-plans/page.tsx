@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
-import { ClipboardList, Calendar, User, FileText, Eye, Plus, Loader2, Search, Filter, Clock, Activity, AlertCircle, Trash2, Download } from "lucide-react"
+import { ClipboardList, Calendar, User, FileText, Eye, Plus, Loader2, Search, Filter, Clock, Activity, AlertCircle, Trash2, Download, Copy, Edit } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -380,30 +380,32 @@ export default function CarePlansPage() {
   return (
     <div className="mx-auto max-w-6xl min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="min-h-screen bottom-nav-spacing p-4 lg:p-8">
-        <PageHeader
-          title="Care Plans"
-          subtitle="Manage and view patient care plans"
-          icon={<ClipboardList className="w-6 h-6" />}
-        />
+        <div className="mb-6">
+          <PageHeader
+            title="Care Plans"
+            subtitle="Manage and view patient care plans"
+            icon={<ClipboardList className="w-6 h-6" />}
+          />
+        </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="p-4 text-center bg-gradient-to-br from-blue-50 to-white border-blue-200">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-xs text-blue-700">Total Plans</div>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Card className="p-4 text-center bg-blue-50">
+            <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-xs text-muted-foreground font-medium">Total Plans</div>
           </Card>
-          <Card className="p-4 text-center bg-gradient-to-br from-green-50 to-white border-green-200">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-xs text-green-700">Active</div>
+          <Card className="p-4 text-center bg-green-50">
+            <div className="text-3xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-xs text-muted-foreground font-medium">Active</div>
           </Card>
-          <Card className="p-4 text-center bg-gradient-to-br from-purple-50 to-white border-purple-200">
-            <div className="text-2xl font-bold text-purple-600">{stats.completed}</div>
-            <div className="text-xs text-purple-700">Completed</div>
+          <Card className="p-4 text-center bg-purple-50">
+            <div className="text-3xl font-bold text-purple-600">{stats.completed}</div>
+            <div className="text-xs text-muted-foreground font-medium">Completed</div>
           </Card>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -415,7 +417,7 @@ export default function CarePlansPage() {
           </div>
           <div className="flex gap-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-36">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
@@ -439,9 +441,9 @@ export default function CarePlansPage() {
           </div>
         </div>
 
-        {/* Create New Button */}
+        {/* New Care Plan Button */}
         <Link href="/care-plan">
-          <Button className="w-full sm:w-auto mb-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+          <Button className="w-full mb-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md">
             <Plus className="w-4 h-4 mr-2" />
             Create New Care Plan
           </Button>
@@ -481,7 +483,7 @@ export default function CarePlansPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="p-5 hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 hover:border-blue-200 bg-gradient-to-br from-white to-gray-50/50">
+                  <Card className="p-5 hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 hover:border-blue-200 bg-white">
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex-1">
                         <h3 className="font-bold text-lg group-hover:text-blue-600 transition-colors">
@@ -492,14 +494,15 @@ export default function CarePlansPage() {
                           <span className="text-xs font-medium">{plan.status}</span>
                         </Badge>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex flex-col gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedPlan(plan)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 hover:bg-blue-100 text-blue-600"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 hover:bg-blue-100 text-blue-600 h-7 w-7 p-0"
+                          title="View"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -508,9 +511,10 @@ export default function CarePlansPage() {
                             e.stopPropagation()
                             deletePlan(plan._id, plan.patientName)
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-50 hover:bg-red-100 text-red-600"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-50 hover:bg-red-100 text-red-600 h-7 w-7 p-0"
+                          title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
@@ -541,7 +545,7 @@ export default function CarePlansPage() {
                         onClick={() => setSelectedPlan(plan)}
                         className="flex-1 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-600 transition-colors"
                       >
-                        <Eye className="w-4 h-4 mr-2" />
+                        <Eye className="w-4 h-4 mr-1" />
                         View
                       </Button>
                       <Button
@@ -551,7 +555,8 @@ export default function CarePlansPage() {
                           e.stopPropagation()
                           deletePlan(plan._id, plan.patientName)
                         }}
-                        className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                        className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 px-2"
+                        title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

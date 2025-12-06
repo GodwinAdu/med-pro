@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
-import { ClipboardList, Loader2, FileText, User, Calendar, Clock, AlertCircle, Download, Volume2 } from "lucide-react"
+import { ClipboardList, Loader2, FileText, User, Calendar, Clock, AlertCircle, Download, Volume2, History, RotateCcw, Copy, Save } from "lucide-react"
 import { toast } from "sonner"
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -245,11 +245,34 @@ export default function CarePlanPage() {
   return (
     <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="min-h-screen bottom-nav-spacing p-4">
-        <PageHeader
-          title="Care Plan Generator"
-          subtitle="AI-powered comprehensive care plans"
-          icon={<ClipboardList className="w-6 h-6" />}
-        />
+        <div className="flex items-center justify-between mb-6">
+          <PageHeader
+            title="Care Plan Generator"
+            subtitle="AI-powered comprehensive care plans"
+            icon={<ClipboardList className="w-6 h-6" />}
+          />
+          <div className="flex gap-2">
+            {!carePlan && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetForm}
+                disabled={!patientInfo}
+                className="h-9"
+              >
+                <RotateCcw className="w-4 h-4 mr-1" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/care-plans'}
+              className="h-9"
+            >
+              <History className="w-4 h-4 mr-1" />
+            </Button>
+          </div>
+        </div>
 
         {!carePlan ? (
           <Card className="p-6">
@@ -398,6 +421,38 @@ export default function CarePlanPage() {
             {/* Action Buttons */}
             <div className="flex gap-3 pb-4">
               <Button 
+                onClick={() => {
+                  const fullPlan = `COMPREHENSIVE NURSING CARE PLAN\n\n` +
+                    `PATIENT INFORMATION:\n` +
+                    `Name: ${carePlan.patientInfo.name}\n` +
+                    `Age: ${carePlan.patientInfo.age}\n` +
+                    `Diagnosis: ${carePlan.patientInfo.diagnosis}\n\n` +
+                    carePlan.problems.map(p => 
+                      `PROBLEM ${p.number}: ${p.problem}\n` +
+                      `Nursing Diagnosis: ${p.nursingDiagnosis}\n` +
+                      `Short-term Goal: ${p.goals.shortTerm}\n` +
+                      `Long-term Goal: ${p.goals.longTerm}\n` +
+                      `Interventions: ${p.interventions.join(', ')}\n` +
+                      `Rationale: ${p.rationale.join(', ')}\n` +
+                      `Evaluation: ${p.evaluation.join(', ')}\n\n`
+                    ).join('')
+                  navigator.clipboard.writeText(fullPlan)
+                  toast.success('Care plan copied to clipboard')
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy
+              </Button>
+              <Button 
+                onClick={saveCarePlan}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+              <Button 
                 onClick={exportToPDF}
                 disabled={isExporting}
                 className="flex-1 bg-red-600 hover:bg-red-700"
@@ -407,20 +462,15 @@ export default function CarePlanPage() {
                 ) : (
                   <Download className="w-4 h-4 mr-2" />
                 )}
-Export PDF
-              </Button>
-              <Button 
-                onClick={saveCarePlan}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                Save Plan
+                PDF
               </Button>
               <Button 
                 onClick={resetForm}
                 variant="outline"
                 className="flex-1"
               >
-                New Plan
+                <RotateCcw className="w-4 h-4 mr-2" />
+                New
               </Button>
             </div>
           </div>

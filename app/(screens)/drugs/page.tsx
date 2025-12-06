@@ -2,11 +2,11 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { Search, Pill, AlertCircle, Loader2, Brain, Sparkles, Plus, X, Shield, Calculator, Volume2 } from "lucide-react"
+import { Search, Pill, AlertCircle, Loader2, Brain, Sparkles, Plus, X, Shield, Calculator, Volume2, History, RotateCcw, Copy } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Input } from "@/components/ui/input"
@@ -37,6 +37,7 @@ interface DrugSearchResult {
 
 export default function DrugsPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [searchQuery, setSearchQuery] = useState("")
     const [interactionQuery, setInteractionQuery] = useState("")
     const [drugInfo, setDrugInfo] = useState<DrugSearchResult | null>(null)
@@ -109,6 +110,8 @@ export default function DrugsPage() {
 
             if (data.success) {
                 setDrugInfo(data.data)
+                // Save to history
+                saveDrugSearch('drug-info', searchQuery, data.data)
             } else {
                 setError("No information found for this drug. Try a different name.")
             }
@@ -121,9 +124,61 @@ export default function DrugsPage() {
         }
     }
 
+    const saveDrugSearch = async (searchType: string, drugName: string, result: any) => {
+        try {
+            const response = await fetch('/api/drugs/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ searchType, drugName, result })
+            })
+            if (response.ok) {
+                console.log('Search saved to history')
+            }
+        } catch (error) {
+            console.error('Failed to save search:', error)
+        }
+    }
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             searchDrug()
+        }
+    }
+
+    useEffect(() => {
+        const searchId = searchParams.get('search')
+        if (searchId) {
+            loadSearchFromHistory(searchId)
+        }
+    }, [searchParams])
+
+    const loadSearchFromHistory = async (id: string) => {
+        setLoading(true)
+        try {
+            const response = await fetch(`/api/drugs/get?id=${id}`)
+            if (response.ok) {
+                const data = await response.json()
+                const { search } = data
+                
+                if (search.searchType === 'drug-info') {
+                    setSearchQuery(search.drugName)
+                    setDrugInfo(search.result)
+                    setActiveTab('search')
+                } else if (search.searchType === 'interaction') {
+                    setInteractionDrugs(search.result.drugs || [])
+                    setInteractionResult(search.result.interaction)
+                    setActiveTab('interactions')
+                } else if (search.searchType === 'dosage') {
+                    setDosageResult(search.result.dosage)
+                    setActiveTab('dosage')
+                }
+                toast.success('Search loaded')
+            }
+        } catch (error) {
+            console.error('Failed to load search:', error)
+            toast.error('Failed to load search')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -162,6 +217,8 @@ export default function DrugsPage() {
             const data = await response.json()
             if (data.success) {
                 setInteractionResult(data.interaction)
+                // Save to history
+                saveDrugSearch('interaction', interactionDrugs.join(', '), { interaction: data.interaction, drugs: interactionDrugs })
             }
         } catch (error) {
             console.error('Interaction check failed:', error)
@@ -202,6 +259,8 @@ export default function DrugsPage() {
             const data = await response.json()
             if (data.success) {
                 setDosageResult(data.dosage)
+                // Save to history
+                saveDrugSearch('dosage', formData.get('drug') as string, { dosage: data.dosage, formData: Object.fromEntries(formData) })
             }
         } catch (error) {
             console.error('Dosage calculation failed:', error)
@@ -216,11 +275,22 @@ export default function DrugsPage() {
     return (
         <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
             <div className="min-h-screen bottom-nav-spacing p-3 sm:p-6 lg:p-8">
-                <PageHeader
-                    title="Drug Search"
-                    subtitle="AI-powered drug information from FDA database"
-                    icon={<Pill className="w-6 h-6" />}
-                />
+                <div className="flex items-center justify-between mb-6">
+                    <PageHeader
+                        title="Drug Search"
+                        subtitle="AI-powered drug information from FDA database"
+                        icon={<Pill className="w-6 h-6" />}
+                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push('/drugs/history')}
+                        className="h-9"
+                    >
+                        <History className="w-4 h-4 mr-1" />
+                        History
+                    </Button>
+                </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3 mb-6">
@@ -253,6 +323,19 @@ export default function DrugsPage() {
                                             className="pl-10"
                                         />
                                     </div>
+                                    {drugInfo && (
+                                        <Button 
+                                            onClick={() => {
+                                                setDrugInfo(null)
+                                                setSearchQuery('')
+                                                setError(null)
+                                            }} 
+                                            variant="outline" 
+                                            size="icon"
+                                        >
+                                            <RotateCcw className="w-4 h-4" />
+                                        </Button>
+                                    )}
                                     <Button onClick={searchDrug} disabled={loading || !searchQuery.trim()} className="px-4">
                                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
                                     </Button>
@@ -301,7 +384,21 @@ export default function DrugsPage() {
                                                 </div>
                                             ) : drugInfo ? (
                                                 <div className="space-y-3">
-                                                    <AudioPlayer text={drugInfo.summary} />
+                                                    <div className="flex items-center gap-2">
+                                                        <AudioPlayer text={drugInfo.summary} />
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(drugInfo.summary)
+                                                                toast.success('Summary copied to clipboard')
+                                                            }}
+                                                            className="h-7 px-2 text-xs"
+                                                        >
+                                                            <Copy className="w-3 h-3 mr-1" />
+                                                            Copy
+                                                        </Button>
+                                                    </div>
                                                     {drugInfo.summary.split('\n\n').map((section, index) => {
                                                         const lines = section.split('\n')
                                                         const title = lines[0]
@@ -403,9 +500,15 @@ export default function DrugsPage() {
                                         placeholder="Add drug name"
                                         value={interactionQuery}
                                         onChange={(e) => setInteractionQuery(e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                addDrugToInteraction()
+                                            }
+                                        }}
                                         className="flex-1"
                                     />
-                                    <Button onClick={addDrugToInteraction} size="sm" variant="outline">
+                                    <Button onClick={addDrugToInteraction} size="sm" variant="outline" disabled={!interactionQuery.trim()}>
                                         <Plus className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -457,7 +560,33 @@ export default function DrugsPage() {
                                 {interactionResult && !interactionLoading && (
                                     <Card className="border-orange-200 bg-orange-50/50">
                                         <CardContent className="p-4">
-                                            <AudioPlayer text={interactionResult} />
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <AudioPlayer text={interactionResult} />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(interactionResult)
+                                                        toast.success('Interaction info copied')
+                                                    }}
+                                                    className="h-7 px-2 text-xs"
+                                                >
+                                                    <Copy className="w-3 h-3 mr-1" />
+                                                    Copy
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setInteractionResult(null)
+                                                        setInteractionDrugs([])
+                                                    }}
+                                                    className="h-7 px-2 text-xs"
+                                                >
+                                                    <RotateCcw className="w-3 h-3 mr-1" />
+                                                    Clear
+                                                </Button>
+                                            </div>
                                             <div className="space-y-3 mt-3">
                                                 {interactionResult.split('\n\n').map((section, index) => {
                                                     const lines = section.split('\n')
@@ -551,7 +680,30 @@ export default function DrugsPage() {
                                 {dosageResult && !dosageLoading && (
                                     <Card className="mt-4 border-blue-200 bg-blue-50/50">
                                         <CardContent className="p-4">
-                                            <AudioPlayer text={dosageResult} />
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <AudioPlayer text={dosageResult} />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(dosageResult)
+                                                        toast.success('Dosage info copied')
+                                                    }}
+                                                    className="h-7 px-2 text-xs"
+                                                >
+                                                    <Copy className="w-3 h-3 mr-1" />
+                                                    Copy
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setDosageResult(null)}
+                                                    className="h-7 px-2 text-xs"
+                                                >
+                                                    <RotateCcw className="w-3 h-3 mr-1" />
+                                                    Clear
+                                                </Button>
+                                            </div>
                                             <div className="space-y-3 mt-3">
                                                 {dosageResult.split('\n\n').map((section, index) => {
                                                     const lines = section.split('\n')

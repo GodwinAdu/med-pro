@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Pill, Loader2, CheckCircle, AlertTriangle, Plus, Trash2, Brain, Shield, Download, Mail, Volume2 } from "lucide-react"
+import { Pill, Loader2, CheckCircle, AlertTriangle, Plus, Trash2, Brain, Shield, Download, Mail, Volume2, History, RotateCcw, Copy, Save } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { toast } from "sonner"
@@ -31,6 +31,7 @@ interface ValidationResult {
 
 export default function PrescriptionsPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [medications, setMedications] = useState<Medication[]>([
         { id: "1", name: "", dosage: "", frequency: "", duration: "" },
     ])
@@ -40,6 +41,84 @@ export default function PrescriptionsPage() {
     const [diagnosis, setDiagnosis] = useState("")
     const [isValidating, setIsValidating] = useState(false)
     const [validation, setValidation] = useState<ValidationResult | null>(null)
+
+    useEffect(() => {
+        const prescriptionId = searchParams.get('id')
+        const isDuplicate = searchParams.get('duplicate') === 'true'
+        if (prescriptionId) {
+            loadPrescription(prescriptionId, isDuplicate)
+        }
+    }, [searchParams])
+
+    const loadPrescription = async (id: string, isDuplicate: boolean = false) => {
+        try {
+            const response = await fetch(`/api/prescription/get?id=${id}`)
+            if (response.ok) {
+                const data = await response.json()
+                const { prescription } = data
+                
+                if (isDuplicate) {
+                    // For duplicate, clear patient-specific info but keep medications
+                    setPatientName('')
+                    setPatientAge('')
+                    setDiagnosis(prescription.diagnosis || '')
+                    setMedications(prescription.medications.map((m: any, i: number) => ({
+                        id: (Date.now() + i).toString(),
+                        ...m
+                    })))
+                    setNotes(prescription.notes || '')
+                    setValidation(null)
+                    toast.success('Template loaded - Enter patient details')
+                } else {
+                    setPatientName(prescription.patientName)
+                    setPatientAge(prescription.patientAge || '')
+                    setDiagnosis(prescription.diagnosis || '')
+                    setMedications(prescription.medications.map((m: any, i: number) => ({
+                        id: (Date.now() + i).toString(),
+                        ...m
+                    })))
+                    setNotes(prescription.notes || '')
+                    if (prescription.validation) {
+                        setValidation(prescription.validation)
+                    }
+                    toast.success('Prescription loaded')
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load prescription:', error)
+            toast.error('Failed to load prescription')
+        }
+    }
+
+    const savePrescription = async () => {
+        if (!patientName || !medications.some(m => m.name)) {
+            toast.error('Missing Information', {
+                description: 'Please enter patient name and at least one medication'
+            })
+            return
+        }
+
+        try {
+            const response = await fetch('/api/prescription/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patientName,
+                    patientAge,
+                    diagnosis,
+                    medications: medications.filter(m => m.name),
+                    notes,
+                    validation
+                })
+            })
+
+            if (response.ok) {
+                toast.success('Prescription saved to history')
+            }
+        } catch (error) {
+            console.error('Failed to save prescription:', error)
+        }
+    }
 
     const addMedication = () => {
         setMedications([...medications, { id: Date.now().toString(), name: "", dosage: "", frequency: "", duration: "" }])
@@ -100,6 +179,8 @@ export default function PrescriptionsPage() {
             const data = await response.json()
             if (data.success) {
                 setValidation(data)
+                // Auto-save after validation
+                setTimeout(() => savePrescription(), 500)
             }
         } catch (error) {
             console.error("Validation failed:", error)
@@ -132,11 +213,41 @@ export default function PrescriptionsPage() {
     return (
         <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-4xl min-h-screen bg-gradient-to-b from-background to-muted/20">
             <div className="min-h-screen bottom-nav-spacing p-3 sm:p-6 lg:p-8">
-                <PageHeader
-                    title="Prescription Validator"
-                    subtitle="AI-powered prescription safety analysis"
-                    icon={<Shield className="w-6 h-6" />}
-                />
+                <div className="flex items-center justify-between mb-6">
+                    <PageHeader
+                        title="Prescription"
+                        subtitle="AI-powered prescription safety analysis"
+                        icon={<Shield className="w-6 h-6" />}
+                    />
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setPatientName('')
+                                setPatientAge('')
+                                setDiagnosis('')
+                                setMedications([{ id: '1', name: '', dosage: '', frequency: '', duration: '' }])
+                                setNotes('')
+                                setValidation(null)
+                                toast.success('Form cleared')
+                            }}
+                            className="h-9"
+                        >
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                            {/* Clear */}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push('/prescription/history')}
+                            className="h-9"
+                        >
+                            <History className="w-4 h-4 mr-1" />
+                            {/* History */}
+                        </Button>
+                    </div>
+                </div>
 
                 <div className="space-y-4">
                     <Card className="p-3">
@@ -251,6 +362,14 @@ export default function PrescriptionsPage() {
 
                             <div className="flex gap-2">
                                 <Button
+                                    onClick={savePrescription}
+                                    disabled={!patientName || !medications.some(m => m.name)}
+                                    variant="outline"
+                                    className="h-12 px-4"
+                                >
+                                    <Save className="w-4 h-4" />
+                                </Button>
+                                <Button
                                     onClick={handleValidate}
                                     disabled={isValidating || !medications.some((m) => m.name)}
                                     className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
@@ -330,7 +449,21 @@ export default function PrescriptionsPage() {
                                 </div>
                             </div>
 
-                            <AudioPlayer text={validation.analysis} />
+                            <div className="flex items-center gap-2 mb-3">
+                                <AudioPlayer text={validation.analysis} />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(validation.analysis)
+                                        toast.success('Analysis copied to clipboard')
+                                    }}
+                                    className="h-7 px-2 text-xs"
+                                >
+                                    <Copy className="w-3 h-3 mr-1" />
+                                    Copy
+                                </Button>
+                            </div>
 
                             <div className="space-y-3 mt-3">
                                 {validation.analysis.split('\n\n').map((section, index) => {

@@ -34,6 +34,35 @@ export default function AboutPage() {
             </p>
           </Card>
 
+          <Card className="p-4 bg-gradient-to-br from-purple-50 to-white border-purple-200">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-purple-600" />
+              Lead Developer
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-purple-900">Godwin Adu</h4>
+                  <p className="text-xs text-purple-700 font-medium">Psychiatric Nurse & Software Developer</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Graduate of Psychiatric Nursing Training College, Ankaful. Combining clinical expertise 
+                    in mental health nursing with advanced software development skills to create innovative 
+                    healthcare solutions that bridge the gap between medical practice and technology.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-purple-100 rounded-lg p-3">
+                <p className="text-xs text-purple-800">
+                  <strong>Vision:</strong> Leveraging firsthand healthcare experience to build intuitive, 
+                  practical tools that truly serve the needs of medical professionals and improve patient outcomes.
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Card className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Stethoscope className="w-4 h-4" />
@@ -148,37 +177,49 @@ export default function AboutPage() {
           </Card>
 
           <Card className="p-4">
-            <h3 className="font-semibold mb-3">Awards & Recognition</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-gold-500" />
-                <span>Best Healthcare Innovation 2024</span>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4" />
+              Core Values
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="text-sm font-medium">Patient-Centered Care</h4>
+                  <p className="text-xs text-muted-foreground">Every feature designed with patient safety and outcomes in mind</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-silver-500" />
-                <span>Top Medical App - Ghana Health Awards</span>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="text-sm font-medium">Clinical Excellence</h4>
+                  <p className="text-xs text-muted-foreground">Evidence-based practices backed by medical research</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-bronze-500" />
-                <span>Excellence in AI Healthcare Solutions</span>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="text-sm font-medium">Innovation & Accessibility</h4>
+                  <p className="text-xs text-muted-foreground">Making advanced healthcare tools accessible to all professionals</p>
+                </div>
               </div>
             </div>
           </Card>
 
           <Card className="p-4">
-            <h3 className="font-semibold mb-3">Statistics</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-lg font-bold text-blue-600">10K+</div>
-                <div className="text-xs text-muted-foreground">Active Users</div>
+            <h3 className="font-semibold mb-3">Technology Stack</h3>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-muted/50 p-2 rounded">
+                <span className="font-medium">Frontend:</span> Next.js, React
               </div>
-              <div>
-                <div className="text-lg font-bold text-green-600">50K+</div>
-                <div className="text-xs text-muted-foreground">Diagnoses</div>
+              <div className="bg-muted/50 p-2 rounded">
+                <span className="font-medium">Backend:</span> Node.js, MongoDB
               </div>
-              <div>
-                <div className="text-lg font-bold text-purple-600">25K+</div>
-                <div className="text-xs text-muted-foreground">Prescriptions</div>
+              <div className="bg-muted/50 p-2 rounded">
+                <span className="font-medium">AI:</span> OpenAI GPT-4
+              </div>
+              <div className="bg-muted/50 p-2 rounded">
+                <span className="font-medium">Payments:</span> Paystack
               </div>
             </div>
           </Card>
@@ -191,11 +232,11 @@ export default function AboutPage() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-muted-foreground" />
-                <span>support@doctorapp.com</span>
+                <span>jutechdevs@gmail.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-muted-foreground" />
-                <span>www.doctorapp.com</span>
+                <span>+233 551 556650</span>
               </div>
             </div>
           </Card>

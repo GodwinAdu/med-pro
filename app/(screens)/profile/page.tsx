@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins, LogOut, Edit, History, Trash2, AlertTriangle } from "lucide-react"
+import { User, Moon, Sun, Globe, Bell, Shield, Info, ChevronRight, Crown, Coins, LogOut, Edit, History, Trash2, AlertTriangle, MessageCircle, Activity, FileText, Stethoscope, ClipboardList, Pill, Download, RefreshCw, Mail, Clock } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +30,14 @@ export default function ProfilePage() {
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteConfirmation, setDeleteConfirmation] = useState('')
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+    const [stats, setStats] = useState({
+        totalChats: 0,
+        totalPrescriptions: 0,
+        totalDiagnoses: 0,
+        totalCarePlans: 0,
+        totalDrugSearches: 0
+    })
+    const [isExporting, setIsExporting] = useState(false)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -58,8 +66,21 @@ export default function ProfilePage() {
             }
         }
         
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('/api/user/stats')
+                if (response.ok) {
+                    const data = await response.json()
+                    setStats(data.stats)
+                }
+            } catch (error) {
+                console.error('Failed to fetch stats:', error)
+            }
+        }
+        
         fetchUser()
         fetchCoinBalance()
+        fetchStats()
     }, [])
 
 
@@ -157,15 +178,48 @@ export default function ProfilePage() {
         }
     }
 
+    const handleExportData = async () => {
+        setIsExporting(true)
+        try {
+            const response = await fetch('/api/user/export')
+            if (response.ok) {
+                const blob = await response.blob()
+                const url = window.URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `medpro-data-${new Date().toISOString().split('T')[0]}.json`
+                document.body.appendChild(a)
+                a.click()
+                window.URL.revokeObjectURL(url)
+                document.body.removeChild(a)
+                toast.success('Data exported successfully')
+            } else {
+                toast.error('Failed to export data')
+            }
+        } catch (error) {
+            toast.error('Failed to export data')
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
+    const quickActions = [
+        { label: "New Chat", icon: MessageCircle, href: "/chat", color: "bg-blue-500" },
+        { label: "Diagnosis", icon: Stethoscope, href: "/diagnosis", color: "bg-green-500" },
+        { label: "Prescription", icon: FileText, href: "/prescription", color: "bg-purple-500" },
+        { label: "Care Plan", icon: ClipboardList, href: "/care-plan", color: "bg-orange-500" },
+    ]
+
     const accountLinks = [
         { label: "Edit Profile", icon: Edit, href: "/profile/edit" },
-        { label: "Coin Usage History", icon: History, href: "/profile/coin-history" },
+        { label: "Credit Usage History", icon: History, href: "/profile/coin-history" },
         { label: "Referral Program", icon: User, href: "/referral" },
     ]
 
     const infoLinks = [
         { label: "Privacy Policy", icon: Shield, href: "/privacy" },
         { label: "Terms of Service", icon: Info, href: "/terms" },
+        { label: "Send Feedback", icon: MessageCircle, href: "/feedback" },
         { label: "About", icon: Info, href: "/about" },
     ]
 
@@ -191,16 +245,24 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-3">
                                         <div className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                                             <User className="w-6 h-6" />
                                         </div>
-                                        <div>
+                                        <div className="flex-1">
                                             <h2 className="text-lg font-bold">{user?.fullName || 'User'}</h2>
-                                            <p className={`text-xs opacity-90`}>
-                                                {user?.role || 'Healthcare Professional'}
-                                            </p>
+                                            <p className="text-xs opacity-90">{user?.role || 'Healthcare Professional'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5 text-xs opacity-90">
+                                        <div className="flex items-center gap-2">
+                                            <Mail className="w-3 h-3" />
+                                            <span>{user?.email || 'email@example.com'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-3 h-3" />
+                                            <span>Last login: {new Date(user?.lastLogin || Date.now()).toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -209,8 +271,70 @@ export default function ProfilePage() {
                     </Card>
                 </motion.div>
 
-                {/* Coin Balance Card */}
+                {/* Quick Actions */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
+                    <Card>
+                        <CardContent className="p-4">
+                            <h3 className="font-semibold mb-3 text-sm">Quick Actions</h3>
+                            <div className="grid grid-cols-4 gap-2">
+                                {quickActions.map((action) => {
+                                    const ActionIcon = action.icon
+                                    return (
+                                        <Link key={action.label} href={action.href}>
+                                            <div className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer">
+                                                <div className={`w-10 h-10 ${action.color} rounded-full flex items-center justify-center`}>
+                                                    <ActionIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <span className="text-xs text-center">{action.label}</span>
+                                            </div>
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Usage Statistics */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-4">
+                    <Card>
+                        <CardContent className="p-4">
+                            <h3 className="font-semibold mb-3 text-sm flex items-center gap-2">
+                                <Activity className="w-4 h-4" />
+                                Your Activity
+                            </h3>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="text-center p-2 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                                    <div className="text-lg font-bold text-blue-600">{stats.totalChats}</div>
+                                    <div className="text-xs text-muted-foreground">Chats</div>
+                                </div>
+                                <div className="text-center p-2 bg-green-50 dark:bg-green-950 rounded-lg">
+                                    <div className="text-lg font-bold text-green-600">{stats.totalDiagnoses}</div>
+                                    <div className="text-xs text-muted-foreground">Diagnoses</div>
+                                </div>
+                                <div className="text-center p-2 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                                    <div className="text-lg font-bold text-purple-600">{stats.totalPrescriptions}</div>
+                                    <div className="text-xs text-muted-foreground">Prescriptions</div>
+                                </div>
+                                <div className="text-center p-2 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                                    <div className="text-lg font-bold text-orange-600">{stats.totalCarePlans}</div>
+                                    <div className="text-xs text-muted-foreground">Care Plans</div>
+                                </div>
+                                <div className="text-center p-2 bg-pink-50 dark:bg-pink-950 rounded-lg">
+                                    <div className="text-lg font-bold text-pink-600">{stats.totalDrugSearches}</div>
+                                    <div className="text-xs text-muted-foreground">Drug Searches</div>
+                                </div>
+                                <div className="text-center p-2 bg-gray-50 dark:bg-gray-950 rounded-lg">
+                                    <div className="text-lg font-bold text-gray-600">{stats.totalChats + stats.totalDiagnoses + stats.totalPrescriptions + stats.totalCarePlans + stats.totalDrugSearches}</div>
+                                    <div className="text-xs text-muted-foreground">Total</div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Coin Balance Card */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-4">
                     <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-200 dark:border-yellow-800">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
@@ -219,14 +343,14 @@ export default function ProfilePage() {
                                         <Coins className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">Coin Balance</h3>
-                                        <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">{coinBalance} coins</p>
+                                        <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">Credit Balance</h3>
+                                        <p className="text-md md:text-2xl font-bold text-yellow-800 dark:text-yellow-200">{coinBalance} credits</p>
                                     </div>
                                 </div>
                                 <Link href="/coins">
                                     <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white">
                                         <Coins className="w-4 h-4 mr-1" />
-                                        Buy Coins
+                                        Buy Credits
                                     </Button>
                                 </Link>
                             </div>
@@ -245,7 +369,7 @@ export default function ProfilePage() {
                                 key={section.title}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 + sectionIndex * 0.1 }}
+                                transition={{ delay: 0.3 + sectionIndex * 0.1 }}
                             >
                                 <Card>
                                     <CardHeader className="pb-2">
@@ -297,7 +421,7 @@ export default function ProfilePage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: 0.6 }}
                     className="mt-4"
                 >
                     <Card>
@@ -327,11 +451,38 @@ export default function ProfilePage() {
                     </Card>
                 </motion.div>
 
+                {/* Data Export */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="mt-4"
+                >
+                    <Button 
+                        onClick={handleExportData}
+                        disabled={isExporting}
+                        variant="outline" 
+                        className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
+                    >
+                        {isExporting ? (
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                <span>Exporting...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Download className="w-4 h-4" />
+                                <span>Export My Data</span>
+                            </div>
+                        )}
+                    </Button>
+                </motion.div>
+
                 {/* Info Links */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
+                    transition={{ delay: 0.75 }}
                     className="mt-4 space-y-1"
                 >
                     {infoLinks.map((link) => {
@@ -358,7 +509,7 @@ export default function ProfilePage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
+                    transition={{ delay: 0.8 }}
                     className="mt-4"
                 >
                     <Button 
@@ -385,7 +536,7 @@ export default function ProfilePage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.75 }}
+                    transition={{ delay: 0.85 }}
                     className="mt-3"
                 >
                     <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -415,7 +566,7 @@ export default function ProfilePage() {
                                     <ul className="text-xs text-red-700 space-y-1">
                                         <li>• All medical records and chat history</li>
                                         <li>• Prescriptions and care plans</li>
-                                        <li>• Coin balance ({coinBalance} coins)</li>
+                                        <li>• Credit balance ({coinBalance} credits)</li>
                                         <li>• Account preferences and settings</li>
                                     </ul>
                                 </div>
@@ -465,10 +616,14 @@ export default function ProfilePage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8 }}
+                    transition={{ delay: 0.9 }}
                     className="mt-6 text-center text-xs text-muted-foreground"
                 >
-                    <p>MedPro v1.0.0</p>
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                        <p>MedPro v1.0.0</p>
+                        <RefreshCw className="w-3 h-3 text-green-600" />
+                        <span className="text-green-600 font-medium">Up to date</span>
+                    </div>
                     <p className="text-xs mt-1">Built with Love ❤️</p>
                 </motion.div>
             </div>

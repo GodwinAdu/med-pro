@@ -5,6 +5,10 @@ import CoinTransaction from '@/lib/models/coin-transaction.models'
 import { Note } from '@/lib/models/notes.models'
 import  CarePlan  from '@/lib/models/care-plan.models'
 import  UserPreferences  from '@/lib/models/preferences.models'
+import { ChatSession } from '@/lib/models/chat.models'
+import { DrugSearch } from '@/lib/models/drug-search.models'
+import { Prescription } from '@/lib/models/prescription.models'
+import { Diagnosis } from '@/lib/models/diagnosis.models'
 import { currentUser, logout } from '@/lib/helpers/session'
 
 export async function DELETE(request: NextRequest) {
@@ -24,6 +28,10 @@ export async function DELETE(request: NextRequest) {
       Note.deleteMany({ userId }),
       CarePlan.deleteMany({ userId }),
       UserPreferences.deleteMany({ userId }),
+      ChatSession.deleteMany({ userId }),
+      DrugSearch.deleteMany({ userId }),
+      Prescription.deleteMany({ userId }),
+      Diagnosis.deleteMany({ userId }),
       User.findByIdAndDelete(userId)
     ])
 

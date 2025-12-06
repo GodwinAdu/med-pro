@@ -254,7 +254,7 @@ export default function CoinsPage() {
     <div className="mx-auto max-w-md min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="min-h-screen bottom-nav-spacing p-4">
         <PageHeader
-          title="Buy Coins"
+          title="Buy Credits"
           subtitle="Pay only for what you use"
           icon={<Coins className="w-6 h-6" />}
         />
@@ -268,7 +268,7 @@ export default function CoinsPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-yellow-900">Current Balance</h3>
-                <p className="text-2xl font-bold text-yellow-800">{coinBalance} coins</p>
+                <p className="text-2xl font-bold text-yellow-800">{coinBalance} credits</p>
               </div>
             </div>
             {canClaimBonus && (
@@ -297,19 +297,19 @@ export default function CoinsPage() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex justify-between">
               <span>Chat Message</span>
-              <span className="font-medium">{FEATURE_COSTS.chat} coins</span>
+              <span className="font-medium">{FEATURE_COSTS.chat} credits</span>
             </div>
             <div className="flex justify-between">
               <span>Drug Search</span>
-              <span className="font-medium">{FEATURE_COSTS['drug-search']} coins</span>
+              <span className="font-medium">{FEATURE_COSTS['drug-search']} credits</span>
             </div>
             <div className="flex justify-between">
               <span>Prescription</span>
-              <span className="font-medium">{FEATURE_COSTS.prescription} coins</span>
+              <span className="font-medium">{FEATURE_COSTS.prescription} credits</span>
             </div>
             <div className="flex justify-between">
               <span>Care Plan</span>
-              <span className="font-medium">{FEATURE_COSTS['care-plan']} coins</span>
+              <span className="font-medium">{FEATURE_COSTS['care-plan']} credits</span>
             </div>
           </div>
         </Card>
@@ -340,10 +340,10 @@ export default function CoinsPage() {
                 }}
               />
               <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-muted-foreground">Rate: 4 coins per ₵1</p>
+                <p className="text-xs text-muted-foreground">Rate: 4 credits per ₵1</p>
                 {calculatedCoins > 0 && (
                   <p className="text-sm font-medium text-green-600">
-                    = {calculatedCoins} coins
+                    = {calculatedCoins} credits
                   </p>
                 )}
               </div>
@@ -364,7 +364,7 @@ export default function CoinsPage() {
                   Processing...
                 </>
               ) : (
-                `Buy ${calculatedCoins > 0 ? calculatedCoins : ''} Coins`
+                `Buy ${calculatedCoins > 0 ? calculatedCoins : ''} Credits`
               )}
             </Button>
           </div>
@@ -428,7 +428,7 @@ export default function CoinsPage() {
                 ) : (
                   <>
                     {pkg.popular && <Zap className="w-5 h-5 mr-2" />}
-                    Buy {pkg.coins} Coins
+                    Buy {pkg.coins} Credits
                   </>
                 )}
               </Button>
@@ -438,7 +438,7 @@ export default function CoinsPage() {
 
         {/* Benefits */}
         <Card className="p-4 mt-6">
-          <h3 className="font-semibold mb-3">Why coins?</h3>
+          <h3 className="font-semibold mb-3">Why credits?</h3>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-blue-600" />
@@ -446,7 +446,7 @@ export default function CoinsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Gift className="w-4 h-4 text-blue-600" />
-              <span>Daily bonus coins for active users</span>
+              <span>Daily bonus credits for active users</span>
             </div>
             <div className="flex items-center gap-2">
               <Coins className="w-4 h-4 text-blue-600" />
@@ -459,7 +459,7 @@ export default function CoinsPage() {
         <Card className="p-4 mt-6 border-orange-200 bg-orange-50">
           <h3 className="font-semibold mb-3 text-orange-900">Payment Issues?</h3>
           <p className="text-sm text-orange-800 mb-3">
-            If you completed payment but didn't receive coins, enter your payment reference below:
+            If you completed payment but didn't receive credits, enter your payment reference below:
           </p>
           <div className="space-y-3">
             <input
@@ -488,7 +488,7 @@ export default function CoinsPage() {
 
         <div className="text-center mt-6 text-xs text-muted-foreground">
           <p>🔒 Secure payments powered by Paystack</p>
-          <p>Coins never expire • Instant activation • Currency: Ghana Cedis (₵)</p>
+          <p>Credits never expire • Instant activation • Currency: Ghana Cedis (₵)</p>
         </div>
       </div>
 

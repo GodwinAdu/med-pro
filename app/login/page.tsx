@@ -29,7 +29,7 @@ export default function LoginPage() {
             const values = { email, password }
             await loginUser(values)
             toast.success('Welcome back!')
-            router.push(redirect || "/chat")
+            router.push(redirect || "/")
         } catch (error) {
             console.error("Login failed:", error)
             toast.error('Invalid credentials. Please try again.')

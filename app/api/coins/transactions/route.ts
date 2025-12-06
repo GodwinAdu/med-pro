@@ -13,16 +13,26 @@ export async function GET(request: NextRequest) {
 
     await connectToDB()
 
+    // Get pagination params
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const skip = (page - 1) * limit
+
     // Get user for current balance
     const user = await User.findById(authUser._id)
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get transactions
+    // Get total count for pagination
+    const total = await CoinTransaction.countDocuments({ userId: authUser._id })
+
+    // Get transactions with pagination
     const transactions = await CoinTransaction.find({ userId: authUser._id })
       .sort({ createdAt: -1 })
-      .limit(50)
+      .skip(skip)
+      .limit(limit)
 
     // Calculate stats
     const stats = {
@@ -33,7 +43,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       transactions,
-      stats
+      stats,
+      pagination: {
+        page,
+        limit,
+        total,
+        hasMore: skip + transactions.length < total
+      }
     })
 
   } catch (error) {

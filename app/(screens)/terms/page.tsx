@@ -74,24 +74,24 @@ export default function TermsOfServicePage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
-              Payments and Coin System
+              Payments and Credit System
             </h3>
             <div className="space-y-3 text-sm text-muted-foreground">
               <div>
                 <h4 className="font-medium text-foreground">Pay-Per-Use Model:</h4>
-                <p>Our app operates on a coin-based system where you purchase coins and use them for specific features.</p>
+                <p>Our app operates on a credit-based system where you purchase credits and use them for specific features.</p>
               </div>
               <div>
                 <h4 className="font-medium text-foreground">Feature Costs:</h4>
-                <p>Chat: 5 coins, Diagnosis: 5 coins, Prescription: 8 coins, Care Plan: 15 coins, Drug Search: 2 coins, Voice: 3 coins</p>
+                <p>Chat: 5 credits, Diagnosis: 5 credits, Prescription: 8 credits, Care Plan: 15 credits, Drug Search: 2 credits, Voice: 3 credits</p>
               </div>
               <div>
                 <h4 className="font-medium text-foreground">Payment Processing:</h4>
-                <p>All payments are processed securely through Paystack. Coins are added to your account immediately upon successful payment.</p>
+                <p>All payments are processed securely through Paystack. Credits are added to your account immediately upon successful payment.</p>
               </div>
               <div>
                 <h4 className="font-medium text-foreground">No Refund Policy:</h4>
-                <p>All coin purchases are final and non-refundable. Coins do not expire and remain in your account for future use.</p>
+                <p>All credit purchases are final and non-refundable. Credits do not expire and remain in your account for future use.</p>
               </div>
             </div>
           </Card>
@@ -129,7 +129,7 @@ export default function TermsOfServicePage() {
             <h3 className="font-semibold mb-3">Account Termination</h3>
             <p className="text-sm text-muted-foreground">
               We may suspend or terminate accounts for violations of these terms. 
-              You may delete your account at any time through the app settings. Upon account deletion, unused coins will be forfeited.
+              You may delete your account at any time through the app settings. Upon account deletion, unused credits will be forfeited.
             </p>
           </Card>
 
@@ -139,7 +139,7 @@ export default function TermsOfServicePage() {
               Referral Program
             </h3>
             <p className="text-sm text-muted-foreground">
-              Referrers receive 50 coins, new users get 25 coins when using a referral code. Referral abuse or fraud may result in account suspension and forfeiture of bonus coins.
+              Referrers receive 50 credits, new users get 25 credits when using a referral code. Referral abuse or fraud may result in account suspension and forfeiture of bonus credits.
             </p>
           </Card>
 
@@ -155,7 +155,7 @@ export default function TermsOfServicePage() {
             <p className="text-sm text-muted-foreground">
               For questions about these terms, contact us at:
             </p>
-            <p className="text-sm font-medium mt-2">legal@doctorapp.com</p>
+            <p className="text-sm font-medium mt-2">jutechdevs@gmail.com</p>
           </Card>
 
           <Card className="p-4 bg-gradient-to-br from-amber-50 to-white border-amber-200">
