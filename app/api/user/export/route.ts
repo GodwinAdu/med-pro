@@ -4,9 +4,9 @@ import { connectToDB } from '@/lib/mongoose'
 import { ChatSession } from '@/lib/models/chat.models'
 import { Prescription } from '@/lib/models/prescription.models'
 import { Diagnosis } from '@/lib/models/diagnosis.models'
-import { CarePlan } from '@/lib/models/care-plan.models'
+import CarePlan from '@/lib/models/care-plan.models'
 import { DrugSearch } from '@/lib/models/drug-search.models'
-import { CoinTransaction } from '@/lib/models/coin-transaction.models'
+import  CoinTransaction  from '@/lib/models/coin-transaction.models'
 
 export async function GET() {
   try {
